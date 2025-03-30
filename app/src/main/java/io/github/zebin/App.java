@@ -4,6 +4,7 @@
 package io.github.zebin;
 
 import io.github.andreyzebin.gitSql.config.ConfigTree;
+import io.github.andreyzebin.gitSql.config.ConfigVersions;
 import io.github.andreyzebin.gitSql.git.LocalSource;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
@@ -26,8 +27,12 @@ public class App {
                 new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
         );
         FileManager fm = new FileManager(terminal);
-        fm.goUp(); // .../.vezuvio/repository
-        fm.goUp(); // .../.vezuvio
+        // fm.goUp(); // .../.vezuvio/repository
+        // fm.goUp(); // .../.vezuvio
+        String resourcesLocation = System.getProperty("VEZUVIO_resources_path");
+
+        fm.makeDir(PosixPath.ofPosix(resourcesLocation));
+        fm.go(PosixPath.ofPosix(resourcesLocation));
         PosixPath home = fm.getCurrent();
         PosixPath resources = fm.makeDir(PosixPath.ofPosix("resources"));
         PosixPath mockRepo = PosixPath.ofPosix("/home/andrey/tmp/mock-repo");
@@ -37,6 +42,7 @@ public class App {
             fm.go(mockRepo);
             DirectoryTree dt = src.getDirectory();
             ConfigTree ct = new ConfigTree(dt);
+            ConfigVersions cf = new ConfigVersions(src, dt, ct);
 
             String os = terminal.eval("echo $(uname)");
             log.debug("logger.root.level={}", System.getProperty("logger.root.level"));
@@ -46,6 +52,11 @@ public class App {
             } else if (test(args, "list", "branches")) {
                 String branch = getCurrent(terminal, resources, "branch");
 
+            } else if (test(args, "list", "versions")) {
+                String branch = getCurrent(terminal, resources, "branch");
+
+                cf.listVersions().map(ConfigVersions.PropertiesVersion::getVersionHash)
+                        .forEach(App::stdoudLine);
             } else if (test(args, "list", "properties")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));

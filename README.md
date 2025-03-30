@@ -6,6 +6,7 @@
 ```bash
 ./gradlew test
 ./gradlew app:run --args='--version'
+./gradlew app:run --args='list versions'
 ./gradlew app:run --args='list branches'
 ./gradlew app:run --args='use branch master'
 

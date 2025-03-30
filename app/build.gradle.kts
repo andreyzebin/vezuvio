@@ -27,7 +27,7 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("io.github.andreyzebin:java-bash:0.0.11")
-    implementation("io.github.andreyzebin:java-git:0.0.1")
+    implementation("io.github.andreyzebin:java-git:0.0.2")
 
 
     implementation("ch.qos.logback:logback-core:$logbackVersion")
@@ -51,12 +51,24 @@ java {
 application {
     // Define the main class for the application.
     mainClass = "io.github.zebin.App"
-    var props = Properties()
-    props.load(File("../etc/vezuvio.properties").reader())
-    applicationDefaultJvmArgs = listOf(
-        "-Dlogger.root.level=${props.getProperty("VEZUVIO_logger_root_level")}",
-        "-Dversion=${version}"
-    )
+    val isProd = (project.findProperty("isProduction") ?: 0) == 1
+    if (isProd) {
+        var props = Properties()
+        props.load(File("../etc/vezuvio.properties").reader())
+        applicationDefaultJvmArgs = listOf(
+            "-Dlogger.root.level=${props.getProperty("VEZUVIO_logger_root_level")}",
+            "-DVEZUVIO_resources_path=../..",
+            "-Dversion=${version}"
+        )
+    } else {
+        applicationDefaultJvmArgs = listOf(
+            "-Dlogger.root.level=DEBUG",
+            "-DVEZUVIO_resources_path=../tmp",
+            "-Dversion=${version}"
+        )
+    }
+
+
 }
 
 tasks.named<Test>("test") {
