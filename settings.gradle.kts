@@ -21,5 +21,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "git-ops"
+rootProject.name = "vezuvio"
 include("app")

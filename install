@@ -575,7 +575,7 @@ currentDir=$(pwd)
     if [ ! -d repository ]; then
       mkdir repository
       logTitleL1 " - Downloading vezuvio sources..."
-      execute "${USABLE_GIT}" clone https://github.com/andreyzebin/git-ops.git repository
+      execute "${USABLE_GIT}" clone https://github.com/andreyzebin/vezuvio.git repository
     fi
     cd repository
     logTitleL1 " - Pulling latest vezuvio sources..."
