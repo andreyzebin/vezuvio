@@ -68,15 +68,15 @@ Requirements
 
 ### Install
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/git-ops/refs/heads/master/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install)"
 ```
 also, if you are using gradle 7.x.x
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/git-ops/refs/heads/gradle-7/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/gradle-7/install)"
 ```
 
 Install for CI
 ```bash
-CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/git-ops/refs/heads/master/install)"
+CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install)"
 alias vezuvio="$VEZUVIO_HOME/bin/vezuvio"
 ```
