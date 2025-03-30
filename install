@@ -584,6 +584,8 @@ currentDir=$(pwd)
     logTitleL1 " - Installing binaries..."
     cp -rf bin "${VEZUVIO_HOME}"/
     chmod u+x "${VEZUVIO_HOME}"/bin/vezuvio
+    logTitleL1 " - Installing configurations..."
+    cp -rf etc "${VEZUVIO_HOME}"/
 
     if [[ -z "${CI-}" ]]; then
       logTitleL1 " - Expose app to shell..."
