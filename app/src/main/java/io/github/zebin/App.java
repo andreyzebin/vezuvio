@@ -43,7 +43,7 @@ public class App {
             log.debug("logger.root.level={}", System.getProperty("logger.root.level"));
 
             if (test(args, "list", "leafs")) {
-                ct.getLeafs().map(PosixPath::toString).forEach(log::info);
+                ct.getLeafs().map(PosixPath::toString).forEach(App::stdoudLine);
             } else if (test(args, "list", "branches")) {
                 String branch = getCurrent(terminal, resources, "branch");
 
@@ -53,7 +53,7 @@ public class App {
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
 
-                ct.getPropertyKeys(leaf).forEach(log::info);
+                ct.getPropertyKeys(leaf).forEach(App::stdoudLine);
             } else if (test(args, "use", /* key */ "branch", /* value */ "*")) {
                 setCurrent(args[2], fm, resources, terminal, "branch");
 
@@ -76,7 +76,7 @@ public class App {
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
 
-                log.info("{}", ct.getProperty(leaf, args[1]));
+                stdoudLine(ct.getProperty(leaf, args[1]));
             } else if (test(args, "shellenv")) {
                 terminal.eval(String.format("export VEZUVIO_HOME=\"%s\"", home));
             } else if (test(args, "--version")) {
@@ -85,6 +85,10 @@ public class App {
 
         }
 
+    }
+
+    private static void stdoudLine(String line) {
+        System.out.println(line);
     }
 
     private static void setCurrent(String value, FileManager fm, PosixPath resources, FunnyTerminal terminal, String domain) {
