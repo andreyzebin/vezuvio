@@ -1,5 +1,3 @@
-import org.gradle.internal.impldep.com.google.common.io.Files
-import java.nio.charset.Charset
 import java.util.Properties
 
 /*
@@ -54,7 +52,7 @@ application {
     // Define the main class for the application.
     mainClass = "io.github.zebin.App"
     var props = Properties()
-    props.load(Files.newReader(File("../etc/vezuvio.properties"), Charset.defaultCharset()))
+    props.load(File("../etc/vezuvio.properties").reader())
     applicationDefaultJvmArgs = listOf(
         "-Dlogger.root.level=${props.getProperty("VEZUVIO_logger_root_level")}",
         "-Dversion=${version}"
