@@ -27,7 +27,7 @@ public class App {
         );
         FileManager fm = new FileManager(terminal);
         fm.goUp(); // .../.vezuvio/repository
-        // fm.goUp(); // .../.vezuvio
+        fm.goUp(); // .../.vezuvio
         PosixPath home = fm.getCurrent();
         PosixPath resources = fm.makeDir(PosixPath.ofPosix("resources"));
         PosixPath mockRepo = PosixPath.ofPosix("/home/andrey/tmp/mock-repo");
