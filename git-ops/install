@@ -5,7 +5,7 @@ set -u
 # 1.  OS local install by Admin
 #     - requires sudo elevation
 #     - LOCAL_APPS_PATH="/usr/local/bin"
-#     - TRAY_HOME=/opt/tray or TRAY_HOME=/home/tray/.tray
+#     - VEZUVIO_HOME=/opt/vezuvio or VEZUVIO_HOME=/home/vezuvio/.vezuvio
 #     - durable between shell sessions
 #     - available between users
 #     - expose app to shell
@@ -13,14 +13,14 @@ set -u
 #     - - via .bashrc
 #     - - via prompt
 #     - - via snippet after install
-#     - - - $> ln -s "${TRAY_HOME}"/bin/tray "${LOCAL_APPS_PATH}"/tray
+#     - - - $> ln -s "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
 #     - USABLE_GRADLE=./gradlew
 # 2.  user home install
 #     - best for office machine with strict access policy
 #     - not requires sudo
 #     - USABLE_GRADLE=gradle
 #     - LOCAL_APPS_PATH=$(echo ~/bin)
-#     - TRAY_HOME=$(echo ~/.tray)
+#     - VEZUVIO_HOME=$(echo ~/.vezuvio)
 #     - HOME=$(echo ~)
 #     - LOCAL_APPS_PATH must exist in PATH
 #     - - if [[ ! PATH==*"$LOCAL_APPS_PATH"* ]] ; then
@@ -32,9 +32,9 @@ set -u
 #     - non-interactive
 #     - may be cached durably between sessions
 #     - - using '2. user home install' dirs for cache
-#     - - TRAY_HOME, USABLE_GRADLE
+#     - - VEZUVIO_HOME, USABLE_GRADLE
 #     - only session guaranteed availability
-#     - via alias 'tray=$TRAY_HOME/bin/tray'
+#     - via alias 'vezuvio=$VEZUVIO_HOME/bin/vezuvio'
 
 unset USE_SOFT_LINK_EMULATION
 unset USE_GRADLE_WRAPPER
@@ -205,20 +205,20 @@ fi
 OS="$(uname)"
 if [[ "${OS}" == "Linux" ]]
 then
-  TRAY_ON_LINUX=1
+  VEZUVIO_ON_LINUX=1
 elif [[ "${OS}" == "Darwin" ]]
 then
-  TRAY_ON_MACOS=1
+  VEZUVIO_ON_MACOS=1
 elif [[ "${OS}" == MINGW* ]]
 then
-  TRAY_ON_MINGW=1
+  VEZUVIO_ON_MINGW=1
 else
   abort "Tray is only supported on macOS and Linux."
 fi
 
 # shellcheck disable=SC2116
-trayHome=$(echo ~/.tray)
-export TRAY_HOME=$trayHome
+vezuvioHome=$(echo ~/.vezuvio)
+export VEZUVIO_HOME=$vezuvioHome
 
 execute() {
   if ! "$@"
@@ -402,7 +402,7 @@ have_sudo_access() {
     HAVE_SUDO_ACCESS="$?"
   fi
 
-  if [[ -n "${TRAY_ON_MACOS-}" ]] && [[ "${HAVE_SUDO_ACCESS}" -ne 0 ]]
+  if [[ -n "${VEZUVIO_ON_MACOS-}" ]] && [[ "${HAVE_SUDO_ACCESS}" -ne 0 ]]
   then
     abort "Need sudo access on macOS (e.g. the user ${USER} needs to be an Administrator)!"
   fi
@@ -416,25 +416,25 @@ if [[ -n "${USE_INTERACTIVE_ELEVATION-}" ]]
 then
   logTitleL1 'Checking for `sudo` access (may request your password)...'
   [[ "${EUID:-${UID}}" == "0" ]] || have_sudo_access
-elif ! [[ -w "${TRAY_HOME}" ]] &&
+elif ! [[ -w "${VEZUVIO_HOME}" ]] &&
      # ! [[ -w "/home" ]] &&
      ! have_sudo_access
 then
   abort "$(
     cat <<EOABORT
-Insufficient permissions to install Tray to "${TRAY_HOME}" (the default prefix).
+Insufficient permissions to install Tray to "${VEZUVIO_HOME}" (the default prefix).
 EOABORT
   )"
 fi
 
 # check_run_command_as_root
 
-if [[ -d "${TRAY_HOME}" && ! -x "${TRAY_HOME}" ]]
+if [[ -d "${VEZUVIO_HOME}" && ! -x "${VEZUVIO_HOME}" ]]
 then
-  abort "The Tray home ${tty_underline}${TRAY_HOME}${tty_reset} exists but is not searchable. Use sudo chmod 775 ${TRAY_HOME}"
+  abort "The Tray home ${tty_underline}${VEZUVIO_HOME}${tty_reset} exists but is not searchable. Use sudo chmod 775 ${VEZUVIO_HOME}"
 fi
 
-if [[ -n "${TRAY_ON_MACOS-}" ]]
+if [[ -n "${VEZUVIO_ON_MACOS-}" ]]
 then
   macos_version="$(major_minor "$(/usr/bin/sw_vers -productVersion)")"
   if version_lt "${macos_version}" "10.7"
@@ -468,7 +468,7 @@ EOS
 fi
 
 USABLE_GIT=/usr/bin/git
-if [[ -n "${TRAY_ON_LINUX-}" || -n "${TRAY_ON_MINGW-}" ]]
+if [[ -n "${VEZUVIO_ON_LINUX-}" || -n "${VEZUVIO_ON_MINGW-}" ]]
 then
   USABLE_GIT="$(find_tool git)"
   if [[ -z "$(command -v git)" ]]
@@ -481,15 +481,15 @@ then
   fi
   if [[ "${USABLE_GIT}" != /usr/bin/git ]]
   then
-    export TRAY_GIT_PATH="${USABLE_GIT}"
-    logTitleL1 "Found Git: ${TRAY_GIT_PATH}"
+    export VEZUVIO_GIT_PATH="${USABLE_GIT}"
+    logTitleL1 "Found Git: ${VEZUVIO_GIT_PATH}"
   fi
 fi
 
 if ! command -v curl >/dev/null
 then
   abort "You must install cURL before installing Tray."
-elif [[ -n "${TRAY_ON_LINUX-}" || -n "${TRAY_ON_MINGW-}" ]]
+elif [[ -n "${VEZUVIO_ON_LINUX-}" || -n "${VEZUVIO_ON_MINGW-}" ]]
 then
   USABLE_CURL="$(find_tool curl)"
   if [[ -z "${USABLE_CURL}" ]]
@@ -497,8 +497,8 @@ then
     abort "The version of cURL that was found does not satisfy requirements for Tray."
   elif [[ "${USABLE_CURL}" != /usr/bin/curl ]]
   then
-    export TRAY_CURL_PATH="${USABLE_CURL}"
-    logTitleL1 "Found cURL: ${TRAY_CURL_PATH}"
+    export VEZUVIO_CURL_PATH="${USABLE_CURL}"
+    logTitleL1 "Found cURL: ${VEZUVIO_CURL_PATH}"
   fi
 fi
 
@@ -507,7 +507,7 @@ if [ -z "${USE_GRADLE_WRAPPER-}" ]; then
   if ! command -v gradle >/dev/null
   then
     abort "You must install Gradle before installing Tray."
-  elif [[ -n "${TRAY_ON_LINUX-}" || -n "${TRAY_ON_MINGW-}" ]]
+  elif [[ -n "${VEZUVIO_ON_LINUX-}" || -n "${VEZUVIO_ON_MINGW-}" ]]
   then
     USABLE_GRADLE="$(find_tool gradle)"
     if [[ -z "${USABLE_GRADLE}" ]]
@@ -515,8 +515,8 @@ if [ -z "${USE_GRADLE_WRAPPER-}" ]; then
       abort "The version of Gradle that was found does not satisfy requirements for Tray."
     elif [[ "${USABLE_GRADLE}" != /usr/bin/gradle ]]
     then
-      export TRAY_GRADLE_PATH="${USABLE_GRADLE}"
-      logTitleL1 "Found Gradle at ${TRAY_GRADLE_PATH}"
+      export VEZUVIO_GRADLE_PATH="${USABLE_GRADLE}"
+      logTitleL1 "Found Gradle at ${VEZUVIO_GRADLE_PATH}"
     fi
   fi
 else
@@ -543,7 +543,7 @@ else
   abort "JAVA_HOME is not set. JDK is Required"
 fi
 
-# $ if [ "/c/Users/THINKPAD/.tray" == "$(echo ~/.tray)" ]; then echo "Equal"; else echo "NotEqual";  fi
+# $ if [ "/c/Users/THINKPAD/.vezuvio" == "$(echo ~/.vezuvio)" ]; then echo "Equal"; else echo "NotEqual";  fi
 # >Equal
 
 logTitleL1 "Your bin paths:"
@@ -557,33 +557,33 @@ do
 done
 
 logTitleL1 "This script will install:"
-echo "${TRAY_HOME}/repository/"
-echo "${TRAY_HOME}/bin/tray"
-echo "${LOCAL_APPS_PATH}/tray"
+echo "${VEZUVIO_HOME}/repository/"
+echo "${VEZUVIO_HOME}/bin/vezuvio"
+echo "${LOCAL_APPS_PATH}/vezuvio"
 
-trayTest () {
+vezuvioTest () {
         # shellcheck disable=SC2139
-        alias tray="$TRAY_HOME/bin/tray"
-        echo "Use alias=$TRAY_HOME/bin/tray"
+        alias vezuvio="$VEZUVIO_HOME/bin/vezuvio"
+        echo "Use alias=$VEZUVIO_HOME/bin/vezuvio"
 }
 
 currentDir=$(pwd)
 {
-    logTitleL1 "Installing tray..."
-    mkdir -p "${TRAY_HOME}"
-    cd "${TRAY_HOME}"
+    logTitleL1 "Installing vezuvio..."
+    mkdir -p "${VEZUVIO_HOME}"
+    cd "${VEZUVIO_HOME}"
     if [ ! -d repository ]; then
       mkdir repository
-      logTitleL1 " - Downloading tray sources..."
-      execute "${USABLE_GIT}" clone https://github.com/andreyzebin/audio-connect-tray.git repository
+      logTitleL1 " - Downloading vezuvio sources..."
+      execute "${USABLE_GIT}" clone https://github.com/andreyzebin/git-ops.git repository
     fi
     cd repository
-    logTitleL1 " - Pulling latest tray sources..."
+    logTitleL1 " - Pulling latest vezuvio sources..."
     execute "${USABLE_GIT}" pull
 
     logTitleL1 " - Installing binaries..."
-    cp -rf bin "${TRAY_HOME}"/
-    chmod u+x "${TRAY_HOME}"/bin/tray
+    cp -rf bin "${VEZUVIO_HOME}"/
+    chmod u+x "${VEZUVIO_HOME}"/bin/vezuvio
 
     if [[ -z "${CI-}" ]]; then
       logTitleL1 " - Expose app to shell..."
@@ -591,22 +591,22 @@ currentDir=$(pwd)
       if [[ -n ${USE_SOFT_LINK_EMULATION-} ]]; then
         logTitleL1 " - - Using soft link emulation for windows..."
          # soft link emulation for window's git bash
-        cat bin/softLinkEmu > "${LOCAL_APPS_PATH}"/tray
+        cat bin/softLinkEmu > "${LOCAL_APPS_PATH}"/vezuvio
       else
-        if [ -f "${LOCAL_APPS_PATH}"/tray ]; then
-          if [ ! "$(readlink "${LOCAL_APPS_PATH}"/tray)" == "${TRAY_HOME}"/bin/tray ]; then
+        if [ -f "${LOCAL_APPS_PATH}"/vezuvio ]; then
+          if [ ! "$(readlink "${LOCAL_APPS_PATH}"/vezuvio)" == "${VEZUVIO_HOME}"/bin/vezuvio ]; then
             # Overwrite
             if have_sudo_access; then
-              sudo ln -sf "${TRAY_HOME}"/bin/tray "${LOCAL_APPS_PATH}"/tray
+              sudo ln -sf "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
             else
-              ln -sf "${TRAY_HOME}"/bin/tray "${LOCAL_APPS_PATH}"/tray
+              ln -sf "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
             fi
           fi
         else
           if have_sudo_access; then
-            sudo ln -s "${TRAY_HOME}"/bin/tray "${LOCAL_APPS_PATH}"/tray
+            sudo ln -s "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
           else
-            ln -s "${TRAY_HOME}"/bin/tray "${LOCAL_APPS_PATH}"/tray
+            ln -s "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
           fi
         fi
       fi
@@ -614,11 +614,11 @@ currentDir=$(pwd)
       logTitleL1 "Checking installation result..."
       logTitleL1 " - Testing if sources are buildable..."
       execute "${USABLE_GRADLE}" -PisProduction=1 clean build
-      logTitleL1 " - Executing: 'tray --version'..."
-      tray --version
+      logTitleL1 " - Executing: 'vezuvio --version'..."
+      vezuvio --version
     else
-      logTitleL1 " - Executing: 'tray --version'..."
-      trayTest --version
+      logTitleL1 " - Executing: 'vezuvio --version'..."
+      vezuvioTest --version
     fi
 } || {
     cd "$currentDir"

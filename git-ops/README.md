@@ -24,15 +24,15 @@ Requirements
 
 ### Install
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/audio-connect-tray/refs/heads/main/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/git-ops/refs/heads/master/install)"
 ```
 also, if you are using gradle 7.x.x
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/audio-connect-tray/refs/heads/gradle-7/install)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/git-ops/refs/heads/gradle-7/install)"
 ```
 
 Install for CI
 ```bash
-CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/audio-connect-tray/refs/heads/main/install)"
-alias tray="$TRAY_HOME/bin/tray"
+CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/git-ops/refs/heads/master/install)"
+alias vezuvio="$VEZUVIO_HOME/bin/vezuvio"
 ```

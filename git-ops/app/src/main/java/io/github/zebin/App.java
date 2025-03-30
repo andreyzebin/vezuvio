@@ -26,8 +26,8 @@ public class App {
                 new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
         );
         FileManager fm = new FileManager(terminal);
-        fm.goUp(); // .../.tray/repository
-        // fm.goUp(); // .../.tray
+        fm.goUp(); // .../.vezuvio/repository
+        // fm.goUp(); // .../.vezuvio
         PosixPath home = fm.getCurrent();
         PosixPath resources = fm.makeDir(PosixPath.ofPosix("resources"));
         PosixPath mockRepo = PosixPath.ofPosix("/home/andrey/tmp/mock-repo");
@@ -78,9 +78,9 @@ public class App {
 
                 log.info("{}", ct.getProperty(leaf, args[1]));
             } else if (test(args, "shellenv")) {
-                terminal.eval(String.format("export TRAY_HOME=\"%s\"", home));
+                terminal.eval(String.format("export VEZUVIO_HOME=\"%s\"", home));
             } else if (test(args, "--version")) {
-                log.info("tray {}", System.getProperty("version"));
+                log.info("vezuvio {}", System.getProperty("version"));
             }
 
         }

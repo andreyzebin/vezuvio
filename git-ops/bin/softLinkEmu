@@ -1,10 +1,10 @@
 #!/bin/bash -pu
 set -u
 
-TRAY_HOME_DEFAULT=$(echo ~/.tray)
-TRAY_HOME=$TRAY_HOME_DEFAULT
+VEZUVIO_HOME_DEFAULT=$(echo ~/.vezuvio)
+VEZUVIO_HOME=$VEZUVIO_HOME_DEFAULT
 
 # run it
-echo "Soft link emulation: $TRAY_HOME/bin/tray $@"
+echo "Soft link emulation: $VEZUVIO_HOME/bin/vezuvio $@"
 # shellcheck disable=SC2145
-eval "$TRAY_HOME/bin/tray $@"
+eval "$VEZUVIO_HOME/bin/vezuvio $@"
