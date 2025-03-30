@@ -15,7 +15,7 @@ var logbackVersion = "1.5.6"
 var slf4jVersion = "2.0.13"
 var junitVersion = "5.10.1"
 
-var version = "0.0.3"
+var version = "0.0.1"
 
 dependencies {
     // Use JUnit Jupiter for testing.
@@ -24,7 +24,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // This dependency is used by the application.
-    implementation("io.github.andreyzebin:java-bash:2.1.0")
+    implementation("io.github.andreyzebin:java-bash:3.0.0")
+    implementation("io.github.andreyzebin:git-sql:4.3.0")
 
 
     implementation("ch.qos.logback:logback-core:$logbackVersion")
@@ -47,7 +48,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = "org.example.App"
+    mainClass = "io.github.zebin.App"
     applicationDefaultJvmArgs = listOf(
         "-Dlogger.root.level=DEBUG",
         "-Dversion=${version}"
