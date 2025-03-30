@@ -11,4 +11,4 @@ plugins {
 }
 
 rootProject.name = "git-ops"
-include("app", "list", "utilities")
+include("app")
