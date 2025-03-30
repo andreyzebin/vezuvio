@@ -38,7 +38,6 @@ public class App {
             DirectoryTree dt = src.getDirectory();
             ConfigTree ct = new ConfigTree(dt);
 
-
             String os = terminal.eval("echo $(uname)");
             log.debug("logger.root.level={}", System.getProperty("logger.root.level"));
 
@@ -80,7 +79,7 @@ public class App {
             } else if (test(args, "shellenv")) {
                 terminal.eval(String.format("export VEZUVIO_HOME=\"%s\"", home));
             } else if (test(args, "--version")) {
-                log.info("vezuvio {}", System.getProperty("version"));
+                stdoudLine(System.getProperty("version"));
             }
 
         }
