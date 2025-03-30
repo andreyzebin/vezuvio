@@ -37,36 +37,26 @@ dependencies {
 
 }
 
-// Apply a specific Java toolchain to ease working on different environments.
-java {
-    // if dev environment
-    val isProd = (project.findProperty("isProduction") ?: 0) == 1
-    if (!isProd) {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
-        }
-    }
-}
-
 application {
     // Define the main class for the application.
-    mainClass = "io.github.zebin.App"
+    mainClass.set("io.github.zebin.App")
     val isProd = (project.findProperty("isProduction") ?: 0) == 1
     if (isProd) {
         var props = Properties()
         props.load(File("../etc/vezuvio.properties").reader())
         applicationDefaultJvmArgs = listOf(
             "-Dlogger.root.level=${props.getProperty("VEZUVIO_logger_root_level")}",
-            "-DVEZUVIO_resources_path=../..",
             "-Dversion=${version}"
         )
     } else {
         applicationDefaultJvmArgs = listOf(
             "-Dlogger.root.level=ERROR",
-            "-DVEZUVIO_resources_path=../tmp",
             "-Dversion=${version}"
         )
     }
+
+
+}
 
 
 }
