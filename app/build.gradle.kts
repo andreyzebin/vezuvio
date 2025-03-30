@@ -24,8 +24,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // This dependency is used by the application.
-    implementation("io.github.andreyzebin:java-bash:3.0.0")
-    implementation("io.github.andreyzebin:git-sql:4.3.0")
+    implementation("io.github.andreyzebin:java-bash:0.0.11")
+    implementation("io.github.andreyzebin:java-git:0.0.1")
 
 
     implementation("ch.qos.logback:logback-core:$logbackVersion")
