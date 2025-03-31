@@ -48,8 +48,6 @@ class UserScenarioTest {
             assertEquals("", runApp("unuse lock"));
         }
 
-        // assertEquals("88b6a", runApp("get offset"));
-
         assertEquals("", runApp("use version 526d3"));
         assertEquals("56", runApp("get property io.github.gitOps.location"));
         assertEquals("", runApp("unuse version"));
