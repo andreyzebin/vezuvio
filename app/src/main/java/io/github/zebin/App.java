@@ -6,6 +6,7 @@ package io.github.zebin;
 import io.github.andreyzebin.gitSql.config.ConfigTree;
 import io.github.andreyzebin.gitSql.config.ConfigVersions;
 import io.github.andreyzebin.gitSql.git.LocalSource;
+import io.github.andreyzebin.gitSql.git.VersionControl;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.sandbox.BashUtils;
@@ -15,6 +16,9 @@ import io.github.zebin.javabash.sandbox.PosixPath;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -32,6 +36,21 @@ public class App {
 
     public static void main(String[] args) {
         new App(System.out::println, System.err::println).run(args);
+    }
+
+    public static <T> Stream<T> lastElements(Stream<T> l, int n) {
+        LinkedList<T> ll = new LinkedList<>();
+
+        l.forEach(el -> {
+            ll.addFirst(el);
+
+            if (ll.size() > n) {
+                ll.removeLast();
+            }
+        });
+
+
+        return ll.stream();
     }
 
     public void run(String[] args) {
@@ -64,6 +83,7 @@ public class App {
                 ct.getLeafs()
                         .map(PosixPath::toString)
                         .forEach(stdOUT);
+
             } else if (test(args, "list", "branches")) {
                 src.branch().ifPresent(stdOUT);
 
@@ -77,14 +97,15 @@ public class App {
                 if (missingLeaf(leaf)) return;
 
                 ct.getPropertyKeys(PosixPath.ofPosix(leaf)).forEach(stdOUT);
+
             } else if (test(args, "use", /* key */ "branch", /* value */ "*")) {
                 setCurrent(args[2], resources, "branch");
 
                 log.info("Branch {} has been set as current", args[2]);
             } else if (test(args, "use", /* key */ "leaf", /* value */ "*")) {
                 setCurrent(args[2], resources, "leaf");
-
                 log.info("Leaf {} has been set as current", args[2]);
+
             } else if (test(args, "use", "lock")) {
                 String leaf = getCurrent(resources, "leaf");
                 if (missingLeaf(leaf)) return;
@@ -94,12 +115,13 @@ public class App {
 
                 log.info("Lock has been acquired id = {}, ts = {}",
                         leafLock.getLockId(), leafLock.getObtainedEpochSec());
+
             } else if (test(args, "use", "version", "*")) {
-
                 setCurrent(args[2], resources, "version");
-            } else if (test(args, "unuse", "version")) {
 
+            } else if (test(args, "unuse", "version")) {
                 unSet(resources, "version");
+
             } else if (test(args, "unuse", "lock")) {
                 String leaf = getCurrent(resources, "leaf");
                 if (missingLeaf(leaf)) return;
@@ -108,6 +130,7 @@ public class App {
                 cf.unLock(PosixPath.ofPosix(leaf), lockId);
                 unSet(resources, "lock");
                 log.info("Lock id = {} has been released", lockId);
+
             } else if (test(args, "commit", "offset",/* newHash */ "*")) {
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(resources, "leaf"));
 
@@ -125,6 +148,7 @@ public class App {
                 }
 
                 cf.setVersion(leaf, args[2], lockId);
+
             } else if (test(args, "set", "property",  /* key */ "*", /* value */ "*")) {
                 String leaf = getCurrent(resources, "leaf");
                 if (missingLeaf(leaf)) return;
@@ -137,6 +161,7 @@ public class App {
 
                 ct.setProperty(PosixPath.ofPosix(leaf), args[2], args[3]);
                 log.info("Property {}#{} has been set", leaf, args[2]);
+
             } else if (test(args, "get", "property", /* key */ "*")) {
                 String leaf = getCurrent(resources, "leaf");
                 if (missingLeaf(leaf)) return;
@@ -147,19 +172,52 @@ public class App {
                     stdOUT.accept(cf.getProperty(ver, PosixPath.ofPosix(leaf), args[2]));
                     return;
                 }
-
                 stdOUT.accept(ct.getProperty(PosixPath.ofPosix(leaf), args[2]));
-            } else if (test(args, "get", "offset")) {
+
+            } else if (test(args, "get", "queue", "offset")) {
                 String leaf = getCurrent(resources, "leaf");
                 if (missingLeaf(leaf)) return;
 
                 stdOUT.accept(cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash());
+
+            } else if (test(args, "get", "queue", "next")) {
+                String leaf = getCurrent(resources, "leaf");
+                if (missingLeaf(leaf)) return;
+
+                String currVersionHash = cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash();
+                String nextHash = getNextHash(src, currVersionHash);
+                stdOUT.accept(nextHash);
+
+            } else if (test(args, "get", "queue", "next-changes")) {
+                String leaf = getCurrent(resources, "leaf");
+                if (missingLeaf(leaf)) return;
+
+                String currVersionHash = cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash();
+                String nextHash = getNextHash(src, currVersionHash);
+
+                src.changes(currVersionHash, nextHash)
+                        .forEach(change -> stdOUT.accept(change.getFile()));
+            } else if (test(args, "get", "queue", "remaining")) {
+                String leaf = getCurrent(resources, "leaf");
+                if (missingLeaf(leaf)) return;
+                String currVersionHash = cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash();
+                src.commits().takeWhile(comm -> !comm.getHash().equals(currVersionHash))
+                        .map(comm -> comm.getHash())
+                        .forEach(stdOUT);
+
             } else if (test(args, "shellenv")) {
                 terminal.eval(String.format("export VEZUVIO_HOME=\"%s\"", home));
             } else if (test(args, "--version")) {
                 stdOUT.accept(System.getProperty("version"));
             }
         }
+    }
+
+    private static String getNextHash(LocalSource src, String currVersionHash) {
+        Stream<VersionControl.Commit> next =
+                lastElements(src.commits()
+                        .takeWhile(comm -> !comm.getHash().startsWith(currVersionHash)), 1);
+        return next.findAny().get().getHash();
     }
 
     private static boolean missingLeaf(String leaf) {
