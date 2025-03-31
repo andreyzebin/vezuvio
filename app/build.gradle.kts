@@ -62,7 +62,7 @@ application {
         )
     } else {
         applicationDefaultJvmArgs = listOf(
-            "-Dlogger.root.level=DEBUG",
+            "-Dlogger.root.level=ERROR",
             "-DVEZUVIO_resources_path=../tmp",
             "-Dversion=${version}"
         )

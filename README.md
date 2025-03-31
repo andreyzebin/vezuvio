@@ -38,6 +38,8 @@ Executor APIs
 
 # done work. commit success offset
 ./gradlew app:run --args='use lock'
+
+
 ./gradlew app:run --args='commit offset 526d3bc58db'
 ./gradlew app:run --args='unuse lock'
 ./gradlew app:run --args='get offset'
