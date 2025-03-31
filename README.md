@@ -17,11 +17,6 @@
 ./gradlew app:run --args='set io.github.gitOps.location babara/kad/abara'
 ./gradlew app:run --args='get io.github.gitOps.location'
 ```
-Branch APIs
-```bash
-./gradlew app:run --args='list branches'
-./gradlew app:run --args='use branch master'
-```
 
 Executor APIs
 ```bash
@@ -55,19 +50,6 @@ Executor APIs
 ./gradlew app:run --args='commit offset 88b6a30e384cda9c'
 ./gradlew app:run --args='unuse lock'
 ./gradlew app:run --args='get offset'
-```
-
-Leafs APIs
-```bash
-./gradlew app:run --args='list leafs'
-./gradlew app:run --args='use leaf foo/bar'
-```
-
-Properties APIs
-```bash
-./gradlew app:run --args='list properties'
-./gradlew app:run --args='set io.github.gitOps.location babara/kad/abara'
-./gradlew app:run --args='get io.github.gitOps.location'
 ```
 
 ## Use
