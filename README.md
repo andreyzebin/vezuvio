@@ -25,10 +25,14 @@ Branch APIs
 
 Version APIs
 ```bash
+./gradlew app:run --args='use branch master'
+./gradlew app:run --args='use leaf foo/bar'
 ./gradlew app:run --args='list versions'
-./gradlew app:run --args='set version'
-./gradlew app:run --args='set version'
-./gradlew app:run --args='use version HEAD'
+./gradlew app:run --args='use lock'
+./gradlew app:run --args='set version HEAD'
+./gradlew app:run --args='unuse lock'
+
+./gradlew app:run --args='get version'
 ```
 
 Leafs APIs
