@@ -37,7 +37,6 @@ public class App {
         PosixPath resources = fm.makeDir(PosixPath.ofPosix("resources"));
         PosixPath mockRepo = PosixPath.ofPosix("/home/andrey/tmp/mock-repo");
 
-
         try (LocalSource src = new LocalSource(mockRepo.toPath(), terminal)) {
             fm.go(mockRepo);
             DirectoryTree dt = src.getDirectory();
@@ -50,7 +49,7 @@ public class App {
             if (test(args, "list", "leafs")) {
                 ct.getLeafs()
                         .map(PosixPath::toString)
-                        .forEach(App::stdoudLine);
+                        .forEach(App::stdoutLine);
             } else if (test(args, "list", "branches")) {
                 String branch = getCurrent(terminal, resources, "branch");
 
@@ -59,15 +58,14 @@ public class App {
 
                 cf.listVersions()
                         .map(ConfigVersions.PropertiesVersion::getVersionHash)
-                        .forEach(App::stdoudLine);
+                        .forEach(App::stdoutLine);
             } else if (test(args, "list", "properties")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
 
-                ct.getPropertyKeys(leaf)
-                        .forEach(App::stdoudLine);
+                ct.getPropertyKeys(leaf).forEach(App::stdoutLine);
             } else if (test(args, "use", /* key */ "branch", /* value */ "*")) {
                 setCurrent(args[2], fm, resources, terminal, "branch");
 
@@ -85,7 +83,8 @@ public class App {
                 ConfigVersions.LeafLock leafLock = cf.tryLock(leaf);
                 setCurrent(leafLock.getLockId(), fm, resources, terminal, "lock");
 
-                log.info("Lock has been acquired id = {}, ts = {}", leafLock.getLockId(), leafLock.getObtainedEpochSec());
+                log.info("Lock has been acquired id = {}, ts = {}",
+                        leafLock.getLockId(), leafLock.getObtainedEpochSec());
             } else if (test(args, "use", "version", "*")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
@@ -154,7 +153,7 @@ public class App {
                     log.debug("Using version {}", ver);
                 }
 
-                stdoudLine(ct.getProperty(leaf, args[2]));
+                stdoutLine(ct.getProperty(leaf, args[2]));
             } else if (test(args, "get", "version")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
@@ -163,16 +162,16 @@ public class App {
                 log.debug("Current leaf is {}", leaf);
 
 
-                stdoudLine(cf.getVersion(leaf).getVersionHash());
+                stdoutLine(cf.getVersion(leaf).getVersionHash());
             } else if (test(args, "shellenv")) {
                 terminal.eval(String.format("export VEZUVIO_HOME=\"%s\"", home));
             } else if (test(args, "--version")) {
-                stdoudLine(System.getProperty("version"));
+                stdoutLine(System.getProperty("version"));
             }
         }
     }
 
-    private static void stdoudLine(String line) {
+    private static void stdoutLine(String line) {
         System.out.println(line);
     }
 
