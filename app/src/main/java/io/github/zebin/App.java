@@ -155,6 +155,7 @@ public class App {
                 String ver = getCurrent(fm, terminal, resources, "version");
                 if (ver != null) {
                     log.debug("Using version {}", ver);
+                    stdoutLine(cf.getProperty(ver, leaf, args[2]));
                 }
 
                 stdoutLine(ct.getProperty(leaf, args[2]));

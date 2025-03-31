@@ -27,15 +27,34 @@ Executor APIs
 ```bash
 ./gradlew app:run --args='use branch master'
 ./gradlew app:run --args='use leaf foo/bar'
-./gradlew app:run --args='list versions'
+./gradlew app:run --args='unuse version'
 
+# get current property value for executor
 ./gradlew app:run --args='get offset'
+./gradlew app:run --args='use version 88b6a30e384cda9c'
+./gradlew app:run --args='get property io.github.gitOps.location'
+
+# get latest property value
+./gradlew app:run --args='unuse version'
+./gradlew app:run --args='get property io.github.gitOps.location'
+./gradlew app:run --args='list versions'
+# do execution
+
+# commit success offset
 ./gradlew app:run --args='use lock'
-./gradlew app:run --args='commit offset 9f0c882c3'
+./gradlew app:run --args='commit offset 526d3bc58db'
 ./gradlew app:run --args='unuse lock'
 ./gradlew app:run --args='get offset'
 
+./gradlew app:run --args='use version 526d3bc58db'
+./gradlew app:run --args='get property io.github.gitOps.location'
+./gradlew app:run --args='unuse version'
 
+# return back
+./gradlew app:run --args='use lock'
+./gradlew app:run --args='commit offset 88b6a30e384cda9c'
+./gradlew app:run --args='unuse lock'
+./gradlew app:run --args='get offset'
 ```
 
 Leafs APIs
