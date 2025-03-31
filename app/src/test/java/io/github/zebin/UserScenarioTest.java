@@ -15,9 +15,6 @@ class UserScenarioTest {
 
     @Test
     public void test() {
-
-
-
         assertEquals("""
                 cf57ed6a9de2a7064ef611a9cc28c9ec67dc45e5
                 88b6a30e384cda9c8eb11aa0cf05f2be09949f2e
