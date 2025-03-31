@@ -29,13 +29,14 @@ Executor APIs
 ./gradlew app:run --args='use version 88b6a30e384cda9c'
 ./gradlew app:run --args='get property io.github.gitOps.location'
 
-# get latest property value
-./gradlew app:run --args='unuse version'
-./gradlew app:run --args='get property io.github.gitOps.location'
+# executor checks for newer versions and decides to execute work with respect to newer
+# property value io.github.gitOps.location
 ./gradlew app:run --args='list versions'
-# do execution
+./gradlew app:run --args='use version 526d3bc58db'
+./gradlew app:run --args='get property io.github.gitOps.location'
+# do work
 
-# commit success offset
+# done work. commit success offset
 ./gradlew app:run --args='use lock'
 ./gradlew app:run --args='commit offset 526d3bc58db'
 ./gradlew app:run --args='unuse lock'
