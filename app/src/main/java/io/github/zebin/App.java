@@ -86,17 +86,21 @@ public class App {
                 setCurrent(leafLock.getLockId(), fm, resources, terminal, "lock");
 
                 log.info("Lock has been acquired id = {}, ts = {}", leafLock.getLockId(), leafLock.getObtainedEpochSec());
-            }  else if (test(args, "unuse", "lock")) {
+            } else if (test(args, "use", "version", "*")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
 
-                ConfigVersions.LeafLock leafLock = cf.tryLock(leaf);
-                setCurrent(leafLock.getLockId(), fm, resources, terminal, "lock");
+                setCurrent(args[2], fm, resources, terminal, "version");
+            } else if (test(args, "unuse", "version")) {
+                String branch = getCurrent(terminal, resources, "branch");
+                PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
+                log.debug("Current branch is {}", branch);
+                log.debug("Current leaf is {}", leaf);
 
-                log.info("Lock has been acquired id = {}, ts = {}", leafLock.getLockId(), leafLock.getObtainedEpochSec());
-            } else if (test(args, "unlock")) {
+                unSet(fm, resources, "version");
+            } else if (test(args, "unuse", "lock")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
                 log.debug("Current branch is {}", branch);
@@ -104,12 +108,19 @@ public class App {
 
                 String lockId = getCurrent(terminal, resources, "lock");
                 cf.unLock(leaf, lockId);
+                unSet(fm, resources, "lock");
                 log.info("Lock id = {} has been released", lockId);
             } else if (test(args, "set", "version",/* newHash */ "*")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
+
+                PosixPath ver = PosixPath.ofPosix(getCurrent(terminal, resources, "version"));
+                if (ver != null) {
+                    log.error("Must not set version under version use. Please unuse version first...");
+                    return;
+                }
 
                 String lockId = getCurrent(terminal, resources, "lock");
                 if (lockId == null) {
@@ -118,42 +129,41 @@ public class App {
                 }
 
                 cf.setVersion(leaf, args[2], lockId);
-            } else if (test(args, "set", /* key */ "*", /* value */ "*")) {
+            } else if (test(args, "set", "property",  /* key */ "*", /* value */ "*")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
 
-                ct.setProperty(leaf, args[1], args[2]);
-                log.info("Property {}#{} has been set", leaf, args[1]);
+                PosixPath ver = PosixPath.ofPosix(getCurrent(terminal, resources, "version"));
+                if (ver != null) {
+                    log.error("Must not set property under version use. Please unuse version first...");
+                    return;
+                }
+
+                ct.setProperty(leaf, args[2], args[3]);
+                log.info("Property {}#{} has been set", leaf, args[2]);
             } else if (test(args, "get", "property", /* key */ "*")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
 
-                stdoudLine(ct.getProperty(leaf, args[1]));
+                PosixPath ver = PosixPath.ofPosix(getCurrent(terminal, resources, "version"));
+                if (ver != null) {
+                    log.debug("Using version {}", ver);
+                }
+
+                stdoudLine(ct.getProperty(leaf, args[2]));
             } else if (test(args, "get", "version")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
+
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
+
 
                 stdoudLine(cf.getVersion(leaf).getVersionHash());
-            } else if (test(args, "get", "lock", /* key */ "*")) {
-                String branch = getCurrent(terminal, resources, "branch");
-                PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
-                log.debug("Current branch is {}", branch);
-                log.debug("Current leaf is {}", leaf);
-
-                stdoudLine(ct.getProperty(leaf, args[1]));
-            } else if (test(args, "get", /* key */ "*")) {
-                String branch = getCurrent(terminal, resources, "branch");
-                PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
-                log.debug("Current branch is {}", branch);
-                log.debug("Current leaf is {}", leaf);
-
-                stdoudLine(ct.getProperty(leaf, args[1]));
             } else if (test(args, "shellenv")) {
                 terminal.eval(String.format("export VEZUVIO_HOME=\"%s\"", home));
             } else if (test(args, "--version")) {
@@ -177,6 +187,12 @@ public class App {
                         audioPrefix.climb("current")
                 )
         );
+    }
+
+    private static void unSet(FileManager fm, PosixPath resources, String domain) {
+        fm.go(resources);
+        PosixPath audioPrefix = PosixPath.ofPosix(domain);
+        fm.remove(audioPrefix.climb("current"));
     }
 
     private static String getCurrent(FunnyTerminal terminal, PosixPath resources, String domain) {
