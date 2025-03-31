@@ -29,6 +29,7 @@ public class App {
         FileManager fm = new FileManager(terminal);
         // fm.goUp(); // .../.vezuvio/repository
         // fm.goUp(); // .../.vezuvio
+
         String resourcesLocation = System.getProperty("VEZUVIO_resources_path");
 
         fm.makeDir(PosixPath.ofPosix(resourcesLocation));
@@ -160,7 +161,6 @@ public class App {
 
                 log.debug("Current branch is {}", branch);
                 log.debug("Current leaf is {}", leaf);
-
 
                 stdoutLine(cf.getVersion(leaf).getVersionHash());
             } else if (test(args, "shellenv")) {
