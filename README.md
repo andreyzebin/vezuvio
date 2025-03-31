@@ -23,16 +23,17 @@ Branch APIs
 ./gradlew app:run --args='use branch master'
 ```
 
-Version APIs
+Executor APIs
 ```bash
 ./gradlew app:run --args='use branch master'
 ./gradlew app:run --args='use leaf foo/bar'
 ./gradlew app:run --args='list versions'
-./gradlew app:run --args='use lock'
-./gradlew app:run --args='set version HEAD'
-./gradlew app:run --args='unuse lock'
 
-./gradlew app:run --args='get version'
+./gradlew app:run --args='get offset'
+./gradlew app:run --args='use lock'
+./gradlew app:run --args='commit offset 9f0c882c3'
+./gradlew app:run --args='unuse lock'
+./gradlew app:run --args='get offset'
 ```
 
 Leafs APIs
