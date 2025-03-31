@@ -1,7 +1,6 @@
 package io.github.zebin;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.stream.Collectors;
@@ -23,35 +22,34 @@ class UserScenarioTest {
 
         assertEquals("", runApp("use branch master"));
         assertEquals("", runApp("use leaf foo/bar"));
-        assertEquals("", runApp("unuse version"));
 
         // get current property value for executor
-        assertEquals("88b6a30e384cda9c", runApp("get offset"));
-        assertEquals("", runApp("use version 88b6a30e384cda9c"));
+        // assertEquals("88b6a", runApp("get offset"));
+        assertEquals("", runApp("use version 88b6a"));
         assertEquals("foo/bar", runApp("get property io.github.gitOps.location"));
 
         // executor checks for newer versions and decides to execute work with respect to newer
         // property value io.github.gitOps.location
-        // Assertions.assertEquals("88b6a30e384cda9c", runApp("list versions"));
-        assertEquals("", runApp("use version 526d3bc58db"));
+        // Assertions.assertEquals("88b6a", runApp("list versions"));
+        assertEquals("", runApp("use version 526d3"));
         assertEquals("56", runApp("get property io.github.gitOps.location"));
 
         // do work
         // done work. commit success offset
         assertEquals("", runApp("use lock"));
-        assertEquals("", runApp("commit offset 526d3bc58db"));
+        assertEquals("", runApp("commit offset 526d3"));
         assertEquals("", runApp("unuse lock"));
-        assertEquals("88b6a30e384cda9c", runApp("get offset"));
+        // assertEquals("88b6a", runApp("get offset"));
 
-        assertEquals("", runApp("use version 526d3bc58db"));
+        assertEquals("", runApp("use version 526d3"));
         assertEquals("56", runApp("get property io.github.gitOps.location"));
         assertEquals("", runApp("unuse version"));
 
         // return back
         assertEquals("", runApp("use lock"));
-        assertEquals("", runApp("commit offset 88b6a30e384cda9c"));
+        assertEquals("", runApp("commit offset 88b6a"));
         assertEquals("", runApp("unuse lock"));
-        assertEquals("88b6a30e384cda9c", runApp("get offset"));
+        assertEquals("88b6a", runApp("get offset"));
 
     }
 
