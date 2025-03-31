@@ -26,6 +26,8 @@ Branch APIs
 Version APIs
 ```bash
 ./gradlew app:run --args='list versions'
+./gradlew app:run --args='set version'
+./gradlew app:run --args='set version'
 ./gradlew app:run --args='use version HEAD'
 ```
 

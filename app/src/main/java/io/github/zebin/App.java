@@ -76,7 +76,17 @@ public class App {
                 setCurrent(args[2], fm, resources, terminal, "leaf");
 
                 log.info("Leaf {} has been set", args[2]);
-            } else if (test(args, "lock")) {
+            } else if (test(args, "use", "lock")) {
+                String branch = getCurrent(terminal, resources, "branch");
+                PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
+                log.debug("Current branch is {}", branch);
+                log.debug("Current leaf is {}", leaf);
+
+                ConfigVersions.LeafLock leafLock = cf.tryLock(leaf);
+                setCurrent(leafLock.getLockId(), fm, resources, terminal, "lock");
+
+                log.info("Lock has been acquired id = {}, ts = {}", leafLock.getLockId(), leafLock.getObtainedEpochSec());
+            }  else if (test(args, "unuse", "lock")) {
                 String branch = getCurrent(terminal, resources, "branch");
                 PosixPath leaf = PosixPath.ofPosix(getCurrent(terminal, resources, "leaf"));
                 log.debug("Current branch is {}", branch);
