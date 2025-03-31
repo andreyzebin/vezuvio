@@ -54,7 +54,7 @@ public class App {
             } else if (test(args, "list", "branches")) {
                 String branch = getCurrent(fm, terminal, resources, "branch");
 
-            } else if (test(args, "list", "changes")) {
+            } else if (test(args, "list", "versions")) {
                 String branch = getCurrent(fm, terminal, resources, "branch");
 
                 cf.listVersions()
