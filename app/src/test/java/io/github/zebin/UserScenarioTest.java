@@ -1,5 +1,7 @@
 package io.github.zebin;
 
+import io.github.zebin.javabash.frontend.TerminalPalette;
+import io.github.zebin.javabash.frontend.TextBrush;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -75,7 +77,38 @@ class UserScenarioTest {
     }
 
     private static String runApp(String s) {
-        log.info(">vezuvio {}", s);
+        String cmdRender = newCanvas(String.format("vezuvio %s", s))
+                //.fill(TerminalPalette.BLUE)
+                .paint("vezuvio", TerminalPalette.MAGENTA_BACKGROUND)
+                .paint("offset", TerminalPalette.GREEN_BOLD_BRIGHT)
+
+                .paint("list", TerminalPalette.YELLOW_BOLD)
+                .paint("un", TerminalPalette.RED_BOLD)
+                .paint("use", TerminalPalette.YELLOW_BOLD)
+                .paint("commit", TerminalPalette.YELLOW_BOLD)
+                .paint("get", TerminalPalette.YELLOW_BOLD)
+                .paint("set", TerminalPalette.YELLOW_BOLD)
+
+                .paint("list", TerminalPalette.YELLOW_BOLD)
+                .paint("use", TerminalPalette.YELLOW_BOLD)
+                .paint("commit", TerminalPalette.YELLOW_BOLD)
+                .paint("get", TerminalPalette.YELLOW_BOLD)
+                .paint("set", TerminalPalette.YELLOW_BOLD)
+
+                .paint("offset", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("versions", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("version", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("leafs", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("leaf", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("lock", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("branches", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("branch", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("queue", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("properties", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .paint("property", TerminalPalette.GREEN_BOLD_BRIGHT)
+                .toString();
+
+        log.info("> " + cmdRender);
         System.setProperty("logger.root.level", "ERROR");
         System.setProperty("VEZUVIO_resources_path", "../tmp");
         System.setProperty("VEZUVIO_repository_location", "/home/andrey/tmp/mock-repo");
@@ -91,6 +124,11 @@ class UserScenarioTest {
         });
         app.run(s.split(" "));
         return sb.toString().lines().collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    private static TextBrush newCanvas(String s) {
+        TextBrush brush = new TextBrush(s);
+        return brush;
     }
 
 }
