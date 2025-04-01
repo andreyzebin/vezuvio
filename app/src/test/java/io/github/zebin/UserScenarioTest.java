@@ -15,11 +15,6 @@ class UserScenarioTest {
 
     @Test
     public void testExecutorAPI() {
-
-        // String from = "c1d84a895c10ee5598e28af72658d6a4f1e51923";
-        String to = "a4920e25c1327a907e2a3add6dc23cc27d14eacf";
-
-
         assertEquals("""
                         cf57ed6a9de2a7064ef611a9cc28c9ec67dc45e5
                         88b6a30e384cda9c8eb11aa0cf05f2be09949f2e
@@ -41,6 +36,8 @@ class UserScenarioTest {
         // assertEquals("88b6a", runApp("get queue offset"));
 
         // get current full state
+        String finallyHash = "c1d84a895c10ee5598e28af72658d6a4f1e51923";
+        String to = "a4920e25c1327a907e2a3add6dc23cc27d14eacf";
         String from = decode(runApp("get queue offset"));
         assertEquals("", runApp("use version " + from));
         assertEquals("foo/bar", runApp("get property io.github.gitOps.location"));
@@ -62,7 +59,7 @@ class UserScenarioTest {
         try {
             assertEquals("", runApp("use lock"));
 
-            assertEquals("", runApp("commit offset " + from));
+            assertEquals("", runApp("commit offset " + finallyHash));
         } finally {
             assertEquals("", runApp("unuse lock"));
         }
