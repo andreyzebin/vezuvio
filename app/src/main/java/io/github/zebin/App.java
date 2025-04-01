@@ -132,14 +132,7 @@ public class App {
                 log.info("Lock id = {} has been released", lockId);
 
             } else if (test(args, "commit", "offset",/* newHash */ "*")) {
-                PosixPath leaf = PosixPath.ofPosix(getCurrent(resources, "leaf"));
-
-                String ver = getCurrent(resources, "version");
-
-                if (ver != null) {
-                    log.error("Must not set version under version use. Please unuse version first...");
-                    return;
-                }
+                String leaf = getCurrent(resources, "leaf");
 
                 String lockId = getCurrent(resources, "lock");
                 if (lockId == null) {
@@ -147,7 +140,7 @@ public class App {
                     return;
                 }
 
-                cf.setVersion(leaf, args[2], lockId);
+                cf.setVersion(PosixPath.ofPosix(leaf), args[2], lockId);
 
             } else if (test(args, "set", "property",  /* key */ "*", /* value */ "*")) {
                 String leaf = getCurrent(resources, "leaf");

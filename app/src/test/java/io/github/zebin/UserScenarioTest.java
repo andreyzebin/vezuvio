@@ -41,6 +41,8 @@ class UserScenarioTest {
         String from = decode(runApp("get queue offset"));
         assertEquals("", runApp("use version " + from));
         assertEquals("foo/bar", runApp("get property io.github.gitOps.location"));
+        log.info("Executor's current value is foo/bar");
+
 
         try {
             assertEquals("", runApp("use lock"));
@@ -54,6 +56,7 @@ class UserScenarioTest {
         assertEquals("", runApp("use version " + to));
         assertEquals("56", runApp("get property io.github.gitOps.location"));
         assertEquals("", runApp("unuse version"));
+        log.info("Executor's current value is 56");
 
         // return back
         try {
