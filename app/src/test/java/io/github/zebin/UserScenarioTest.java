@@ -50,23 +50,23 @@ class UserScenarioTest {
         String next = runApp("get queue next");
         log.info("Executor's next offset for foo/bar is {}", next);
 
-        String nextChanges = runApp("get queue next-changes");
+        List<PosixPath> nextChanges = runApp("get queue next-changes").lines()
+                .map(PosixPath::ofPosix)
+                .filter(pp -> pp.getEnd().equals("conf.properties"))
+                .toList();
+        // parent dir;
         List<PosixPath> allProjects = runApp("list leafs")
                 .lines()
                 .map(PosixPath::ofPosix).toList();
 
         List<PosixPath> projectsAffected = allProjects.stream()
-                .filter(prj -> {
-                    return nextChanges.lines()
-                            .map(PosixPath::ofPosix)
-                            // parent dir
-                            .map(PosixPath::descend)
-                            .anyMatch(prj::startsWith);
-                })
+                .filter(prj -> nextChanges.stream()
+                        .map(PosixPath::descend)
+                        .anyMatch(prj::startsWith))
                 .toList();
 
         log.info("Files changed: ");
-        nextChanges.lines().forEach(p -> log.info(" - {}", p));
+        nextChanges.forEach(p -> log.info(" - {}", p));
 
 
         log.info("Projects affected: ");
