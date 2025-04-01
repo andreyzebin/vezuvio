@@ -49,7 +49,14 @@ class UserScenarioTest {
         // setup
         title1("1. Setup");
         commit(finallyHash);
-        List<PosixPath> projectsAffected = getProjectsAffected(finallyHash, from, to);
+
+        // queue next hash -> hash
+        // project lock -> lockId
+        // queue next changes -> list<change>
+        // do work
+        // queue commit offset [hash]
+        // project release lock [lockId]
+        List<PosixPath> projectsAffected = poll(finallyHash, from, to);
 
         title1("2. Projects affected: ");
         projectsAffected.forEach(p -> log.info(" - {}", p));
@@ -90,7 +97,7 @@ class UserScenarioTest {
         }
     }
 
-    private static List<PosixPath> getProjectsAffected(String finallyHash, String from, String to) {
+    private static List<PosixPath> poll(String finallyHash, String from, String to) {
         // return back
         assertEquals(from, runApp("get queue offset"));
         // runApp("get queue remaining").lines().forEach(log::info);
