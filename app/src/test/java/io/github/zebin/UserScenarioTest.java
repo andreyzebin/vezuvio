@@ -44,7 +44,63 @@ class UserScenarioTest {
         // get current full state
         String finallyHash = "c1d84a895c10ee5598e28af72658d6a4f1e51923";
         String to = "a4920e25c1327a907e2a3add6dc23cc27d14eacf";
-        String from = runApp("get queue offset");
+        String from = finallyHash;
+
+        // setup
+        title1("1. Setup");
+        commit(finallyHash);
+        List<PosixPath> projectsAffected = getProjectsAffected(finallyHash, from, to);
+
+        title1("2. Projects affected: ");
+        projectsAffected.forEach(p -> log.info(" - {}", p));
+        title1("2.1. Changes of: foo/bar...");
+        Map<String, String> state = getState("foo/bar", from);
+        title1("2.2. Executor's current state for Project foo/bar: ");
+        state.forEach((k, ch) -> log.info(" - {} = {}", k, ch));
+        Map<String, Change<String>> changeSet = getChangeSet("foo/bar", from, to);
+        title1("2.3. Executor's next updates for Project foo/bar: ");
+        changeSet.forEach((k, ch) -> log.info(" - {} = {} -> {}", k, ch.before, ch.after));
+
+        title1("3. Processing changes of: foo/bar...");
+        title1("4. Committing changes of: foo/bar...");
+        commit(to);
+        title1("5. Asserting result state");
+        assertState(to);
+    }
+
+    private static void title1(String s) {
+        log.info(newCanvas(s).fill(TerminalPalette.BLUE).toString());
+    }
+
+    private static void assertState(String to) {
+        assertEquals("", runApp("use version " + to));
+        assertEquals("56", runApp("get property io.github.gitOps.location"));
+        assertEquals("", runApp("unuse version"));
+        log.info("Executor's current value is 56");
+    }
+
+    private static void commit(String to) {
+        try {
+            assertEquals("", runApp("use lock"));
+            // do work
+            // done work. commit success offset
+            assertEquals("", runApp("commit offset " + to));
+        } finally {
+            assertEquals("", runApp("unuse lock"));
+        }
+    }
+
+    private static List<PosixPath> getProjectsAffected(String finallyHash, String from, String to) {
+        // return back
+        assertEquals(from, runApp("get queue offset"));
+        // runApp("get queue remaining").lines().forEach(log::info);
+        assertEquals(to, runApp("get queue next"));
+        assertEquals("""
+                foo/bar/conf.properties
+                foo/bar/lock.json
+                foo/conf.properties""", runApp("get queue next-changes"));
+
+
         log.info("Executor's current offset for foo/bar is {}", from);
 
         String next = runApp("get queue next");
@@ -67,67 +123,22 @@ class UserScenarioTest {
 
         log.info("Property files changed: ");
         nextChanges.forEach(p -> log.info(" - {}", p));
+        return projectsAffected;
+    }
 
-
-        log.info("Projects affected: ");
-        projectsAffected.forEach(p -> log.info(" - {}", p));
-
+    private static Map<String, String> getState(String project, String from) {
+        assertEquals("", runApp(String.format("use leaf %s", project)));
 
         assertEquals("", runApp("use version " + from));
         List<String> listPropertiesBefore = runApp("list properties").lines().toList();
         Map<String, String> before = new HashMap<>();
         //
         listPropertiesBefore.forEach(cp -> before.put(cp, runApp(String.format("get property %s", cp))));
+        return before;
+    }
 
-
-        assertEquals("", runApp("use version " + to));
-        List<String> listPropertiesAfter = runApp("list properties").lines().toList();
-        Map<String, String> after = new HashMap<>();
-        //
-        listPropertiesAfter.forEach(cp -> after.put(cp, runApp(String.format("get property %s", cp))));
-
-        log.info("Executor's next updates for Project foo/bar: ");
-        diffChanged(before, after).forEach((k, ch) -> {
-            log.info(" - {} = {} -> {}", k, ch.before, ch.after);
-        });
-
-
-        assertEquals("", runApp("use version " + from));
-        assertEquals("foo/bar", runApp("get property io.github.gitOps.location"));
-        log.info("Executor's current value is foo/bar");
-
-
-        try {
-            assertEquals("", runApp("use lock"));
-            // do work
-            // done work. commit success offset
-            assertEquals("", runApp("commit offset " + to));
-        } finally {
-            assertEquals("", runApp("unuse lock"));
-        }
-
-        assertEquals("", runApp("use version " + to));
-        assertEquals("56", runApp("get property io.github.gitOps.location"));
-        assertEquals("", runApp("unuse version"));
-        log.info("Executor's current value is 56");
-
-        // return back
-        try {
-            assertEquals("", runApp("use lock"));
-
-            assertEquals("", runApp("commit offset " + finallyHash));
-        } finally {
-            assertEquals("", runApp("unuse lock"));
-        }
-
-        assertEquals(from, runApp("get queue offset"));
-        // runApp("get queue remaining").lines().forEach(log::info);
-        assertEquals(to, runApp("get queue next"));
-        assertEquals("""
-                foo/bar/conf.properties
-                foo/bar/lock.json
-                foo/conf.properties""", runApp("get queue next-changes"));
-
+    private static Map<String, Change<String>> getChangeSet(String project, String from, String to) {
+        return diffChanged(getState(project, from), getState(project, to));
     }
 
     public static <K, V> Map<K, Change<V>> diffChanged(Map<K, V> left, Map<K, V> right) {
@@ -191,7 +202,7 @@ class UserScenarioTest {
                 .paint("property", TerminalPalette.GREEN_BOLD_BRIGHT)
                 .toString();
 
-        log.info("> " + cmdRender);
+        //log.info("> " + cmdRender);
         System.setProperty("logger.root.level", "ERROR");
         System.setProperty("VEZUVIO_resources_path", "../tmp");
         System.setProperty("VEZUVIO_repository_location", "/home/andrey/tmp/mock-repo");
