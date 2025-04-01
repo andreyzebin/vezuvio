@@ -2,9 +2,15 @@ package io.github.zebin;
 
 import io.github.zebin.javabash.frontend.TerminalPalette;
 import io.github.zebin.javabash.frontend.TextBrush;
+import io.github.zebin.javabash.sandbox.PosixPath;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,7 +44,54 @@ class UserScenarioTest {
         // get current full state
         String finallyHash = "c1d84a895c10ee5598e28af72658d6a4f1e51923";
         String to = "a4920e25c1327a907e2a3add6dc23cc27d14eacf";
-        String from = decode(runApp("get queue offset"));
+        String from = runApp("get queue offset");
+        log.info("Executor's current offset for foo/bar is {}", from);
+
+        String next = runApp("get queue next");
+        log.info("Executor's next offset for foo/bar is {}", next);
+
+        String nextChanges = runApp("get queue next-changes");
+        List<PosixPath> allProjects = runApp("list leafs")
+                .lines()
+                .map(PosixPath::ofPosix).toList();
+
+        List<PosixPath> projectsAffected = allProjects.stream()
+                .filter(prj -> {
+                    return nextChanges.lines()
+                            .map(PosixPath::ofPosix)
+                            // parent dir
+                            .map(PosixPath::descend)
+                            .anyMatch(prj::startsWith);
+                })
+                .toList();
+
+        log.info("Files changed: ");
+        nextChanges.lines().forEach(p -> log.info(" - {}", p));
+
+
+        log.info("Projects affected: ");
+        projectsAffected.forEach(p -> log.info(" - {}", p));
+
+
+        assertEquals("", runApp("use version " + from));
+        List<String> listPropertiesBefore = runApp("list properties").lines().toList();
+        Map<String, String> before = new HashMap<>();
+        //
+        listPropertiesBefore.forEach(cp -> before.put(cp, runApp(String.format("get property %s", cp))));
+
+
+        assertEquals("", runApp("use version " + to));
+        List<String> listPropertiesAfter = runApp("list properties").lines().toList();
+        Map<String, String> after = new HashMap<>();
+        //
+        listPropertiesAfter.forEach(cp -> after.put(cp, runApp(String.format("get property %s", cp))));
+
+        log.info("Executor's next updates for Project foo/bar: ");
+        diffChanged(before, after).forEach((k, ch) -> {
+            log.info(" - {} = {} -> {}", k, ch.before, ch.after);
+        });
+
+
         assertEquals("", runApp("use version " + from));
         assertEquals("foo/bar", runApp("get property io.github.gitOps.location"));
         log.info("Executor's current value is foo/bar");
@@ -75,6 +128,30 @@ class UserScenarioTest {
                 foo/bar/lock.json
                 foo/conf.properties""", runApp("get queue next-changes"));
 
+    }
+
+    public static <K, V> Map<K, Change<V>> diffChanged(Map<K, V> left, Map<K, V> right) {
+        Map<K, Change<V>> difference = new HashMap<>();
+
+
+        right.forEach((pp, v) -> difference.put(pp, Change.<V>builder()
+                .before(left.get(pp))
+                .after(right.get(pp))
+                .build()));
+
+        left.forEach((pp, v) -> difference.computeIfAbsent(pp, (ppp) -> Change.<V>builder()
+                .before(left.get(pp))
+                .after(null)
+                .build()));
+
+        return difference;
+    }
+
+    @Data
+    @Builder
+    public static class Change<T> {
+        private final T before;
+        private final T after;
     }
 
     private static String decode(String s) {
