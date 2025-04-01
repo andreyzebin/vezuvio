@@ -65,7 +65,7 @@ class UserScenarioTest {
                         .anyMatch(prj::startsWith))
                 .toList();
 
-        log.info("Files changed: ");
+        log.info("Property files changed: ");
         nextChanges.forEach(p -> log.info(" - {}", p));
 
 
