@@ -16,7 +16,7 @@ class UserScenarioTest {
     @Test
     public void testExecutorAPI() {
 
-        String from = "c1d84a895c10ee5598e28af72658d6a4f1e51923";
+        // String from = "c1d84a895c10ee5598e28af72658d6a4f1e51923";
         String to = "a4920e25c1327a907e2a3add6dc23cc27d14eacf";
 
 
@@ -41,6 +41,7 @@ class UserScenarioTest {
         // assertEquals("88b6a", runApp("get queue offset"));
 
         // get current full state
+        String from = decode(runApp("get queue offset"));
         assertEquals("", runApp("use version " + from));
         assertEquals("foo/bar", runApp("get property io.github.gitOps.location"));
 
@@ -74,6 +75,11 @@ class UserScenarioTest {
                 foo/bar/lock.json
                 foo/conf.properties""", runApp("get queue next-changes"));
 
+    }
+
+    private static String decode(String s) {
+        return s.lines()
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 
     private static String runApp(String s) {
@@ -123,7 +129,7 @@ class UserScenarioTest {
             sb.append(System.lineSeparator());
         });
         app.run(s.split(" "));
-        return sb.toString().lines().collect(Collectors.joining(System.lineSeparator()));
+        return decode(sb.toString());
     }
 
     private static TextBrush newCanvas(String s) {
