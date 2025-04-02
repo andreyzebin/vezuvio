@@ -50,13 +50,15 @@ class UserScenarioTest {
         title1("1. Setup");
         commit(finallyHash);
 
-        // use   queue   [projectId]
-        // queue next    hash -> [hash]
-        // queue acquire lock -> [lockId]
-        // queue next    changes -> list<change>
-        // do work
+        // --start
+        // use   queue   [foo/bar]
+        // queue next    hash          -> [hash]
+        // queue acquire lock          -> [lockId]
+        // queue next    changes       -> list<change>
+        // # do work
         // queue commit  offset [hash]
         // queue release lock [lockId]
+        // --loop
         List<PosixPath> projectsAffected = poll(finallyHash, from, to);
 
         title1("2. Projects affected: ");
