@@ -50,6 +50,12 @@ class UserScenarioTest {
         title1("1. Setup");
         commit(finallyHash);
 
+
+
+        // use queue     [dispatcher]
+        // queue next    hash          -> [hash]
+        // # list affected projects
+        //
         // --start
         // use   queue   [foo/bar]
         // queue next    hash          -> [hash]
