@@ -73,108 +73,97 @@ public class App {
     public void run(String[] args) {
         TextTerminal terminal = conf.getTerm();
         fm = new FileManager(terminal);
+        String os = terminal.eval("echo $(uname)");
+        log.debug("logger.root.level={}", System.getProperty("logger.root.level"));
 
-        String repoLocation = System.getProperty("VEZUVIO_repository_location");
-        PosixPath mockRepo = PosixPath.ofPosix(repoLocation);
+        if (test(args, STATE_ORIGIN_URL, "use", "*")) {
+            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_URL, args[2]);
+            //src.branch().ifPresent(stdOUT);
 
-        try (LocalSource src = new LocalSource(mockRepo.toPath(), terminal)) {
-            fm.go(mockRepo);
-            DirectoryTree dt = src.getDirectory();
-            ConfigTree ct = new ConfigTree(dt);
-            ConfigVersions cf = new ConfigVersions(src, ct);
+        } else if (test(args, STATE_ORIGIN_AUTH, "use", "*")) {
+            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_AUTH, args[2]);
+            //src.branch().ifPresent(stdOUT);
 
-            String os = terminal.eval("echo $(uname)");
-            log.debug("logger.root.level={}", System.getProperty("logger.root.level"));
+        } else if (test(args, "branches", "use", "*")) {
+            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
+            //src.branch().ifPresent(stdOUT);
 
-            if (test(args, STATE_ORIGIN_URL, "use", "*")) {
-                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_URL, args[2]);
-                //src.branch().ifPresent(stdOUT);
+        } else if (test(args, "leafs", "use", "*")) {
+            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
+        } else if (test(args, "branches", "list")) {
+            withRequestTree(rt -> {
+                rt.listBranches().forEach(stdOUT::accept);
+            });
+        } else if (test(args, "leafs", "list")) {
+            String cBranch = getCOnf(BRANCHES_CURRENT);
 
-            } else if (test(args, STATE_ORIGIN_AUTH, "use", "*")) {
-                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_AUTH, args[2]);
-                //src.branch().ifPresent(stdOUT);
+            withRequestTree(rt -> {
+                rt.getBranch(cBranch).getLeafs().map(PosixPath::toString).forEach(stdOUT);
+            });
+        } else if (test(args, "changes", "list")) {
+            String cBranch = getCOnf(BRANCHES_CURRENT);
 
-            } else if (test(args, "branches", "use", "*")) {
-                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
-                //src.branch().ifPresent(stdOUT);
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.getExplodedChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
+                        .entrySet()
+                        .stream()
+                        .map(ce -> String.format("[%s] %s: %s -> %s",
+                                ce.getKey().getKey(),
+                                ce.getKey().getValue(),
+                                ce.getValue().getBefore(),
+                                ce.getValue().getAfter()))
+                        .forEach(stdOUT);
+            });
+        } else if (test(args, "changes", "merge")) {
+            String cBranch = getCOnf(BRANCHES_CURRENT);
 
-            } else if (test(args, "leafs", "use", "*")) {
-                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
-            } else if (test(args, "branches", "list")) {
-                withRequestTree(rt -> {
-                    rt.listBranches().forEach(stdOUT::accept);
-                });
-            } else if (test(args, "leafs", "list")) {
-                String cBranch = getCOnf(BRANCHES_CURRENT);
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                rt.getTrunk().pull();
+                rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
+            });
+        } else if (test(args, "*", "which")) {
+            String prop = getCOnf(args[0]);
+            stdOUT.accept(prop);
 
-                withRequestTree(rt -> {
-                    rt.getBranch(cBranch).getLeafs().map(PosixPath::toString).forEach(stdOUT);
-                });
-            } else if (test(args, "changes", "list")) {
-                String cBranch = getCOnf(BRANCHES_CURRENT);
+        } else if (test(args, "properties", "list")) {
+            String cLeaf = getCOnf(LEAFS_CURRENT);
+            String cBranch = getCOnf(BRANCHES_CURRENT);
 
-                withRequestTree(rt -> {
-                    ConfigVersions cBr = rt.getBranch(cBranch);
-                    cBr.getExplodedChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
-                            .entrySet()
-                            .stream()
-                            .map(ce -> String.format("[%s] %s: %s -> %s",
-                                    ce.getKey().getKey(),
-                                    ce.getKey().getValue(),
-                                    ce.getValue().getBefore(),
-                                    ce.getValue().getAfter()))
-                            .forEach(stdOUT);
-                });
-            } else if (test(args, "changes", "merge")) {
-                String cBranch = getCOnf(BRANCHES_CURRENT);
+            withRequestTree(rt ->
+                    rt.getBranch(cBranch).getEffectivePropertyKeys(PosixPath.ofPosix(cLeaf))
+                            .forEach(cp -> stdOUT.accept(cp))
+            );
+        } else if (test(args, "properties", "*", "get")) {
+            String cLeaf = getCOnf(LEAFS_CURRENT);
+            String cBranch = getCOnf(BRANCHES_CURRENT);
 
-                withRequestTree(rt -> {
-                    ConfigVersions cBr = rt.getBranch(cBranch);
-                    rt.getTrunk().pull();
-                    rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
-                });
-            } else if (test(args, "*", "which")) {
-                String prop = getCOnf(args[0]);
-                stdOUT.accept(prop);
+            withRequestTree(rt -> {
+                stdOUT.accept(rt.getBranch(cBranch).getEffectiveProperty(PosixPath.ofPosix(cLeaf), args[1]));
+            });
+        } else if (test(args, "properties", "*", "set", "*")) {
+            String cLeaf = getCOnf(LEAFS_CURRENT);
+            String cBranch = getCOnf(BRANCHES_CURRENT);
 
-            } else if (test(args, "properties", "list")) {
-                String cLeaf = getCOnf(LEAFS_CURRENT);
-                String cBranch = getCOnf(BRANCHES_CURRENT);
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.setProperty(PosixPath.ofPosix(cLeaf), args[1], args[3]);
+                cBr.commit();
+                cBr.push();
+            });
+        } else if (test(args, "properties", "*", "delete")) {
+            String cLeaf = getCOnf(LEAFS_CURRENT);
+            String cBranch = getCOnf(BRANCHES_CURRENT);
 
-                withRequestTree(rt ->
-                        rt.getBranch(cBranch).getEffectivePropertyKeys(PosixPath.ofPosix(cLeaf))
-                                .forEach(cp -> stdOUT.accept(cp))
-                );
-            } else if (test(args, "properties", "*", "get")) {
-                String cLeaf = getCOnf(LEAFS_CURRENT);
-                String cBranch = getCOnf(BRANCHES_CURRENT);
-
-                withRequestTree(rt -> {
-                    stdOUT.accept(rt.getBranch(cBranch).getEffectiveProperty(PosixPath.ofPosix(cLeaf), args[1]));
-                });
-            } else if (test(args, "properties", "*", "set", "*")) {
-                String cLeaf = getCOnf(LEAFS_CURRENT);
-                String cBranch = getCOnf(BRANCHES_CURRENT);
-
-                withRequestTree(rt -> {
-                    ConfigVersions cBr = rt.getBranch(cBranch);
-                    cBr.setProperty(PosixPath.ofPosix(cLeaf), args[1], args[3]);
-                    cBr.commit();
-                    cBr.push();
-                });
-            } else if (test(args, "properties", "*", "delete")) {
-                String cLeaf = getCOnf(LEAFS_CURRENT);
-                String cBranch = getCOnf(BRANCHES_CURRENT);
-
-                withRequestTree(rt -> {
-                    ConfigVersions cBr = rt.getBranch(cBranch);
-                    cBr.deleteProperty(PosixPath.ofPosix(cLeaf), args[1]);
-                    cBr.commit();
-                    cBr.push();
-                });
-            } else if (test(args, "--version")) {
-                stdOUT.accept("0.0.1");
-            }
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.deleteProperty(PosixPath.ofPosix(cLeaf), args[1]);
+                cBr.commit();
+                cBr.push();
+            });
+        } else if (test(args, "--version")) {
+            stdOUT.accept("0.0.1");
         }
     }
 
