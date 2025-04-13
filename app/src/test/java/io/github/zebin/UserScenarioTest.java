@@ -59,6 +59,17 @@ class UserScenarioTest {
     }
 
     @Test
+    public void testPropertiesAPI_delete() {
+        setupOrigin();
+
+
+        runApp("properties prop1 set " + "def");
+        runApp("properties prop2 set " + "def");
+        runApp("properties prop1 delete");
+        Assertions.assertEquals("def", runApp("properties prop2 get"));
+    }
+
+    @Test
     public void testChangesAPI() {
         setupOrigin();
         runApp("leafs use foo/bar");
