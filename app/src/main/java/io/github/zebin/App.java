@@ -53,6 +53,7 @@ public class App {
         if (workingDirOverride != null) {
             log.info("Working directory is set via system property");
             wd = PosixPath.ofPosix(workingDirOverride);
+            fm.go(wd);
         } else {
             log.info("Working directory is set from java process");
             wd = fm.getCurrent();
