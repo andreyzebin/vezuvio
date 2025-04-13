@@ -73,21 +73,8 @@ public class App {
     public void run(String[] args) {
         TextTerminal terminal = conf.getTerm();
         fm = new FileManager(terminal);
-        //log.info("Working directory is {}", conf.getWorkDir());
-        //log.info("Local home is {}", conf.getVezuvioLocalHome());
 
-
-        String repoUrl = conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_URL);
-        String curBanrch = conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT);
-        String authProp = conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_AUTH);
-
-        String resourcesLocation = System.getProperty("VEZUVIO_resources_path");
         String repoLocation = System.getProperty("VEZUVIO_repository_location");
-
-        fm.makeDir(PosixPath.ofPosix(resourcesLocation));
-        fm.go(PosixPath.ofPosix(resourcesLocation));
-        PosixPath home = fm.getCurrent();
-        PosixPath resources = fm.makeDir(PosixPath.ofPosix("resources"));
         PosixPath mockRepo = PosixPath.ofPosix(repoLocation);
 
         try (LocalSource src = new LocalSource(mockRepo.toPath(), terminal)) {
