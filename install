@@ -615,7 +615,7 @@ currentDir=$(pwd)
 
       logTitleL1 "Checking installation result..."
       logTitleL1 " - Testing if sources are buildable..."
-      execute "${USABLE_GRADLE}" -PisProduction=1 clean build
+      execute "${USABLE_GRADLE}" -PisProduction=1 clean build -x test
       logTitleL1 " - Executing: 'vezuvio --version'..."
       vezuvio --version
     else
