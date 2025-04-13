@@ -57,13 +57,11 @@ application {
         props.load(File("../etc/vezuvio.properties").reader())
         applicationDefaultJvmArgs = listOf(
             "-Dlogger.root.level=${props.getProperty("VEZUVIO_logger_root_level")}",
-            "-DVEZUVIO_resources_path=../..",
             "-Dversion=${version}"
         )
     } else {
         applicationDefaultJvmArgs = listOf(
             "-Dlogger.root.level=ERROR",
-            "-DVEZUVIO_resources_path=../tmp",
             "-Dversion=${version}"
         )
     }
