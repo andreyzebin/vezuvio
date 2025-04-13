@@ -52,6 +52,7 @@ application {
     // Define the main class for the application.
     mainClass = "io.github.zebin.App"
     val isProd = (project.findProperty("isProduction") ?: 0) == 1
+    System.out.println("isProd=" + project.findProperty("isProduction"));
     if (isProd) {
         // Configure via properties file
         var props = Properties()
