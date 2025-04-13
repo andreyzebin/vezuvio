@@ -175,6 +175,16 @@ public class App {
                     cBr.commit();
                     cBr.push();
                 });
+            } else if (test(args, "properties", "*", "delete")) {
+                String cLeaf = getCOnf(LEAFS_CURRENT);
+                String cBranch = getCOnf(BRANCHES_CURRENT);
+
+                withRequestTree(rt -> {
+                    ConfigVersions cBr = rt.getBranch(cBranch);
+                    cBr.deleteProperty(PosixPath.ofPosix(cLeaf), args[1]);
+                    cBr.commit();
+                    cBr.push();
+                });
             } else if (test(args, "--version")) {
                 stdOUT.accept(System.getProperty("version"));
             }

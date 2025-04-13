@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,7 +40,7 @@ class UserScenarioTest {
 
 
     @Test
-    public void testConfAPI() {
+    public void testPropertiesAPI() {
         setupOrigin();
 
         runApp("branches list");
@@ -72,6 +73,37 @@ class UserScenarioTest {
 
         runApp("branches use master");
         runApp("properties io.github.gitOps.location get");
+    }
+
+    @Test
+    public void testLockAPI() {
+        setupOrigin();
+        runApp("leafs use foo/bar");
+
+        runApp("branches use master");
+        runApp("properties io.github.gitOps.location get");
+
+        String executorId = UUID.randomUUID().toString().substring(0, 5);
+        runApp("leafs use foo/bar/.state");
+        runApp(String.format("properties %s.lock.createdUnixTs set %d", App.IO_GITHUB_VEZUVIO, System.currentTimeMillis()));
+        runApp(String.format("properties %s.lock.executorId set %s", App.IO_GITHUB_VEZUVIO, executorId));
+        runApp(String.format("properties %s.request.branchName set %s", App.IO_GITHUB_VEZUVIO, "request-001"));
+        runApp(String.format("properties %s.request.status set %s", App.IO_GITHUB_VEZUVIO, "STARTED"));
+        runApp("properties list");
+
+        runApp("branches use request-001");
+        runApp("changes list");
+        runApp("changes merge");
+        Assertions.assertEquals("", runApp("changes list"));
+
+        runApp("branches use master");
+        runApp("properties io.github.gitOps.location get");
+
+        runApp(String.format("properties io.github.vezuvio.lock.createdUnixTs delete", System.currentTimeMillis()));
+        runApp(String.format("properties io.github.vezuvio.lock.executorId delete", executorId));
+        runApp(String.format("properties io.github.vezuvio.request.status set %s", "FINISHED"));
+        runApp("properties list");
+
     }
 
     @Test
