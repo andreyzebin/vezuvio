@@ -5,7 +5,9 @@
 ### Run from source
 ```bash
 ./gradlew test
+
 ./gradlew app:run --args='--version'
+./gradlew app:run --args='--system.properties'
 ./gradlew app:run --args='list versions'
 ./gradlew app:run --args='list branches'
 ./gradlew app:run --args='use branch master'

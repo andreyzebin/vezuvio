@@ -53,16 +53,18 @@ application {
     mainClass = "io.github.zebin.App"
     val isProd = (project.findProperty("isProduction") ?: 0) == 1
     if (isProd) {
+        // Configure via properties file
         var props = Properties()
         props.load(File("../etc/vezuvio.properties").reader())
         applicationDefaultJvmArgs = listOf(
-            "-Dlogger.root.level=${props.getProperty("VEZUVIO_logger_root_level")}",
-            "-Dversion=${version}"
+            "-Dlogger.root.level=${props.getProperty("logger.root.level")}",
+            "-Dio.github.vezuvio.workingDirectory=${project.findProperty("workingDirectory")}",
+            "-Dio.github.vezuvio.version=${version}"
         )
     } else {
         applicationDefaultJvmArgs = listOf(
-            "-Dlogger.root.level=ERROR",
-            "-Dversion=${version}"
+            "-Dlogger.root.level=INFO",
+            "-Dio.github.vezuvio.version=${version}"
         )
     }
 

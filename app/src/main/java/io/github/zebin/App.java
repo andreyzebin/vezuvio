@@ -8,13 +8,11 @@ import io.github.andreyzebin.gitSql.config.ConfigVersions;
 import io.github.andreyzebin.gitSql.config.RequestTree;
 import io.github.andreyzebin.gitSql.git.GitAuth;
 import io.github.andreyzebin.gitSql.git.GitConfigurations;
-import io.github.andreyzebin.gitSql.git.LocalSource;
 import io.github.andreyzebin.gitSql.git.RemoteOrigin;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.process.TextTerminal;
 import io.github.zebin.javabash.sandbox.BashUtils;
-import io.github.zebin.javabash.sandbox.DirectoryTree;
 import io.github.zebin.javabash.sandbox.FileManager;
 import io.github.zebin.javabash.sandbox.PosixPath;
 import lombok.extern.slf4j.Slf4j;
@@ -50,10 +48,18 @@ public class App {
                 new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
         );
         FileManager fm = new FileManager(terminal);
+        String workingDirOverride = System.getProperty(IO_GITHUB_VEZUVIO + ".workingDirectory");
+        PosixPath wd;
+        if (workingDirOverride != null) {
+            log.info("Working directory is set via system property");
+            wd = PosixPath.ofPosix(workingDirOverride);
+        } else {
+            log.info("Working directory is set from java process");
+            wd = fm.getCurrent();
+        }
 
-        new App(System.out::println,
-                System.err::println,
-                new Configurations(fm.getCurrent(), terminal)).run(args);
+        Configurations cnf = new Configurations(wd, terminal);
+        new App(System.out::println, System.err::println, cnf).run(args);
     }
 
     public static <T> Stream<T> lastElements(Stream<T> l, int n) {
@@ -74,7 +80,6 @@ public class App {
         TextTerminal terminal = conf.getTerm();
         fm = new FileManager(terminal);
         String os = terminal.eval("echo $(uname)");
-        log.debug("logger.root.level={}", System.getProperty("logger.root.level"));
 
         if (test(args, STATE_ORIGIN_URL, "use", "*")) {
             conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_URL, args[2]);
@@ -163,7 +168,11 @@ public class App {
                 cBr.push();
             });
         } else if (test(args, "--version")) {
-            stdOUT.accept("0.0.1");
+            stdOUT.accept(System.getProperty(IO_GITHUB_VEZUVIO + ".version"));
+        } else if (test(args, "--system.properties")) {
+            System.getProperties()
+                    .forEach((key, value) ->
+                            stdOUT.accept(String.format("%s=%s", key, value)));
         }
     }
 

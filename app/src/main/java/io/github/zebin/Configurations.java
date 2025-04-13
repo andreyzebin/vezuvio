@@ -12,7 +12,7 @@ public class Configurations {
     public static final PosixPath VESUVIO_HOME_CONF = VESUVIO_HOME.climb("conf");
     private final PosixPath wd;
     private final TextTerminal term;
-    private FileManager fm;
+    private final FileManager fm;
 
     public Configurations(PosixPath wd, TextTerminal term) {
         this.wd = wd;
