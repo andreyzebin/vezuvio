@@ -66,6 +66,18 @@ elif [ "$#" -eq 3 ]; then
     cd "${VEZUVIO_HOME}"/repository || exit
     ./gradlew clean --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3"
     cd "${currentDir}" || exit
+elif [ "$#" -eq 4 ]; then
+    cd "${VEZUVIO_HOME}"/repository || exit
+    ./gradlew clean --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3 $4"
+    cd "${currentDir}" || exit
+elif [ "$#" -eq 5 ]; then
+    cd "${VEZUVIO_HOME}"/repository || exit
+    ./gradlew clean --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3 $4 $5"
+    cd "${currentDir}" || exit
+elif [ "$#" -eq 6 ]; then
+    cd "${VEZUVIO_HOME}"/repository || exit
+    ./gradlew clean --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3 $4 $5 $6"
+    cd "${currentDir}" || exit
 else
     echo "Too many arguments"
     echo "Usage: vezuvio <arg1> <arg2>"
