@@ -28,8 +28,9 @@ import java.util.stream.Stream;
 @Slf4j
 public class App {
     public static final String IO_GITHUB_VEZUVIO = "io.github.vezuvio";
-    public static final String STATE_ORIGIN_URL = "state.origin.url";
-    public static final String STATE_ORIGIN_AUTH = "state.origin.auth";
+
+    public static final String ORIGINS_CURRENT = "origins.current";
+    public static final String CREDENTIALS_CURRENT = "credentials.current";
     public static final String BRANCHES_CURRENT = "branches.current";
     public static final String LEAFS_CURRENT = "leafs.current";
     private FileManager fm;
@@ -82,18 +83,12 @@ public class App {
         fm = new FileManager(terminal);
         String os = terminal.eval("echo $(uname)");
 
-        if (test(args, STATE_ORIGIN_URL, "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_URL, args[2]);
-            //src.branch().ifPresent(stdOUT);
-
-        } else if (test(args, STATE_ORIGIN_AUTH, "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_AUTH, args[2]);
-            //src.branch().ifPresent(stdOUT);
-
+        if (test(args, "origins", "use", "*")) {
+            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + ORIGINS_CURRENT, args[2]);
+        } else if (test(args, "credentials", "use", "*")) {
+            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + CREDENTIALS_CURRENT, args[2]);
         } else if (test(args, "branches", "use", "*")) {
             conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
-            //src.branch().ifPresent(stdOUT);
-
         } else if (test(args, "leafs", "use", "*")) {
             conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
         } else if (test(args, "branches", "list")) {
@@ -129,10 +124,14 @@ public class App {
                 rt.getTrunk().pull();
                 rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
             });
-        } else if (test(args, "*", "which")) {
-            String prop = getCOnf(args[0]);
-            stdOUT.accept(prop);
-
+        } else if (test(args, "branches", "which")) {
+            stdOUT.accept(getCOnf(BRANCHES_CURRENT));
+        } else if (test(args, "leafs", "which")) {
+            stdOUT.accept(getCOnf(LEAFS_CURRENT));
+        } else if (test(args, "credentials", "which")) {
+            stdOUT.accept(getCOnf(CREDENTIALS_CURRENT));
+        } else if (test(args, "origins", "which")) {
+            stdOUT.accept(getCOnf(ORIGINS_CURRENT));
         } else if (test(args, "properties", "list")) {
             String cLeaf = getCOnf(LEAFS_CURRENT);
             String cBranch = getCOnf(BRANCHES_CURRENT);
@@ -193,9 +192,9 @@ public class App {
                 branchName -> cache.computeIfAbsent(branchName, ss ->
                         {
                             RemoteOrigin remoteOrigin = new RemoteOrigin(
-                                    getCOnf(STATE_ORIGIN_URL),
+                                    getCOnf(ORIGINS_CURRENT),
                                     conf.getTerm(),
-                                    GitAuth.ofSshAgent(getCOnf(STATE_ORIGIN_AUTH).split(":")[1]),
+                                    GitAuth.ofSshAgent(getCOnf(CREDENTIALS_CURRENT).split(":")[1]),
                                     branchName,
                                     new GitConfigurations() {
                                         @Override
@@ -219,8 +218,8 @@ public class App {
         consumer.accept(rt);
     }
 
-    private String getCOnf(String stateOriginUrl) {
-        return conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + stateOriginUrl);
+    private String getCOnf(String prop) {
+        return conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + prop);
     }
 
 }
