@@ -55,6 +55,13 @@ Executor APIs
 ./gradlew app:run --args='get offset'
 ```
 
+Executor APIs TODO
+```bash
+./gradlew app:run --args='state.origin.url use ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git'
+./gradlew app:run --args='auth use ssh-agent:zebin'
+./gradlew app:run --args='branch use master'
+```
+
 ## Use
 Requirements
 - Operating system: Linux or macOs

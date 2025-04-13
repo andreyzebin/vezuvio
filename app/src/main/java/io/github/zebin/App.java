@@ -5,37 +5,55 @@ package io.github.zebin;
 
 import io.github.andreyzebin.gitSql.config.ConfigTree;
 import io.github.andreyzebin.gitSql.config.ConfigVersions;
+import io.github.andreyzebin.gitSql.config.RequestTree;
+import io.github.andreyzebin.gitSql.git.GitAuth;
+import io.github.andreyzebin.gitSql.git.GitConfigurations;
 import io.github.andreyzebin.gitSql.git.LocalSource;
-import io.github.andreyzebin.gitSql.git.VersionControl;
+import io.github.andreyzebin.gitSql.git.RemoteOrigin;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
+import io.github.zebin.javabash.process.TextTerminal;
 import io.github.zebin.javabash.sandbox.BashUtils;
 import io.github.zebin.javabash.sandbox.DirectoryTree;
 import io.github.zebin.javabash.sandbox.FileManager;
 import io.github.zebin.javabash.sandbox.PosixPath;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 @Slf4j
 public class App {
-    private FunnyTerminal terminal;
+    public static final String IO_GITHUB_VEZUVIO = "io.github.vezuvio";
+    public static final String STATE_ORIGIN_URL = "state.origin.url";
+    public static final String STATE_ORIGIN_AUTH = "state.origin.auth";
+    public static final String BRANCHES_CURRENT = "branches.current";
+    public static final String LEAFS_CURRENT = "leafs.current";
     private FileManager fm;
     private final Consumer<String> stdOUT;
     private final Consumer<String> stdERR;
+    private final Configurations conf;
 
-    public App(Consumer<String> stdOUT, Consumer<String> stdERR) {
+    public App(Consumer<String> stdOUT, Consumer<String> stdERR, Configurations conf) {
         this.stdOUT = stdOUT;
         this.stdERR = stdERR;
+        this.conf = conf;
     }
 
     public static void main(String[] args) {
-        new App(System.out::println, System.err::println).run(args);
+        TextTerminal terminal = new FunnyTerminal(
+                new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
+        );
+        FileManager fm = new FileManager(terminal);
+
+        new App(System.out::println,
+                System.err::println,
+                new Configurations(fm.getCurrent(), terminal)).run(args);
     }
 
     public static <T> Stream<T> lastElements(Stream<T> l, int n) {
@@ -49,17 +67,19 @@ public class App {
             }
         });
 
-
         return ll.stream();
     }
 
     public void run(String[] args) {
-        terminal = new FunnyTerminal(
-                new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
-        );
+        TextTerminal terminal = conf.getTerm();
         fm = new FileManager(terminal);
-        // fm.goUp(); // .../.vezuvio/repository
-        // fm.goUp(); // .../.vezuvio
+        //log.info("Working directory is {}", conf.getWorkDir());
+        //log.info("Local home is {}", conf.getVezuvioLocalHome());
+
+
+        String repoUrl = conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_URL);
+        String curBanrch = conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT);
+        String authProp = conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_AUTH);
 
         String resourcesLocation = System.getProperty("VEZUVIO_resources_path");
         String repoLocation = System.getProperty("VEZUVIO_repository_location");
@@ -74,182 +94,91 @@ public class App {
             fm.go(mockRepo);
             DirectoryTree dt = src.getDirectory();
             ConfigTree ct = new ConfigTree(dt);
-            ConfigVersions cf = new ConfigVersions(src, dt, ct);
+            ConfigVersions cf = new ConfigVersions(src, ct);
 
             String os = terminal.eval("echo $(uname)");
             log.debug("logger.root.level={}", System.getProperty("logger.root.level"));
 
-            if (test(args, "list", "leafs")) {
-                ct.getLeafs()
-                        .map(PosixPath::toString)
-                        .forEach(stdOUT);
+            if (test(args, STATE_ORIGIN_URL, "use", "*")) {
+                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_URL, args[2]);
+                //src.branch().ifPresent(stdOUT);
 
-            } else if (test(args, "list", "branches")) {
-                src.branch().ifPresent(stdOUT);
+            } else if (test(args, STATE_ORIGIN_AUTH, "use", "*")) {
+                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + STATE_ORIGIN_AUTH, args[2]);
+                //src.branch().ifPresent(stdOUT);
 
-            } else if (test(args, "list", "versions")) {
-                cf.listVersions()
-                        .map(ConfigVersions.PropertiesVersion::getVersionHash)
-                        .forEach(stdOUT);
+            } else if (test(args, "branches", "use", "*")) {
+                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
+                //src.branch().ifPresent(stdOUT);
 
-            } else if (test(args, "list", "properties")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
+            } else if (test(args, "leafs", "use", "*")) {
+                conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
+            } else if (test(args, "branches", "list")) {
+                withRequestTree(rt -> {
+                    rt.listBranches().forEach(stdOUT::accept);
+                });
+            } else if (test(args, "leafs", "list")) {
+                String cBranch = getCOnf(BRANCHES_CURRENT);
 
-                ct.getPropertyKeys(PosixPath.ofPosix(leaf)).forEach(stdOUT);
+                withRequestTree(rt -> {
+                    rt.getBranch(cBranch).getLeafs().map(PosixPath::toString).forEach(stdOUT);
+                });
+            } else if (test(args, "changes", "list")) {
+                String cBranch = getCOnf(BRANCHES_CURRENT);
 
-            } else if (test(args, "use", /* key */ "branch", /* value */ "*")) {
-                setCurrent(args[2], resources, "branch");
+                withRequestTree(rt -> {
+                    ConfigVersions cBr = rt.getBranch(cBranch);
+                    cBr.getExplodedChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
+                            .entrySet()
+                            .stream()
+                            .map(ce -> String.format("[%s] %s: %s -> %s",
+                                    ce.getKey().getKey(),
+                                    ce.getKey().getValue(),
+                                    ce.getValue().getBefore(),
+                                    ce.getValue().getAfter()))
+                            .forEach(stdOUT);
+                });
+            } else if (test(args, "changes", "merge")) {
+                String cBranch = getCOnf(BRANCHES_CURRENT);
 
-                log.info("Branch {} has been set as current", args[2]);
-            } else if (test(args, "use", /* key */ "leaf", /* value */ "*")) {
-                setCurrent(args[2], resources, "leaf");
-                log.info("Leaf {} has been set as current", args[2]);
+                withRequestTree(rt -> {
+                    ConfigVersions cBr = rt.getBranch(cBranch);
+                    rt.getTrunk().pull();
+                    rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
+                });
+            } else if (test(args, "*", "which")) {
+                String prop = getCOnf(args[0]);
+                stdOUT.accept(prop);
 
-            } else if (test(args, "use", "lock")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
+            } else if (test(args, "properties", "list")) {
+                String cLeaf = getCOnf(LEAFS_CURRENT);
+                String cBranch = getCOnf(BRANCHES_CURRENT);
 
-                ConfigVersions.LeafLock leafLock = cf.tryLock(PosixPath.ofPosix(leaf));
-                setCurrent(leafLock.getLockId(), resources, "lock");
+                withRequestTree(rt ->
+                        rt.getBranch(cBranch).getEffectivePropertyKeys(PosixPath.ofPosix(cLeaf))
+                                .forEach(cp -> stdOUT.accept(cp))
+                );
+            } else if (test(args, "properties", "*", "get")) {
+                String cLeaf = getCOnf(LEAFS_CURRENT);
+                String cBranch = getCOnf(BRANCHES_CURRENT);
 
-                log.info("Lock has been acquired id = {}, ts = {}",
-                        leafLock.getLockId(), leafLock.getObtainedEpochSec());
+                withRequestTree(rt -> {
+                    stdOUT.accept(rt.getBranch(cBranch).getEffectiveProperty(PosixPath.ofPosix(cLeaf), args[1]));
+                });
+            } else if (test(args, "properties", "*", "set", "*")) {
+                String cLeaf = getCOnf(LEAFS_CURRENT);
+                String cBranch = getCOnf(BRANCHES_CURRENT);
 
-            } else if (test(args, "use", "version", "*")) {
-                setCurrent(args[2], resources, "version");
-
-            } else if (test(args, "unuse", "version")) {
-                unSet(resources, "version");
-
-            } else if (test(args, "unuse", "lock")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
-
-                String lockId = getCurrent(resources, "lock");
-                cf.unLock(PosixPath.ofPosix(leaf), lockId);
-                unSet(resources, "lock");
-                log.info("Lock id = {} has been released", lockId);
-
-            } else if (test(args, "commit", "offset",/* newHash */ "*")) {
-                String leaf = getCurrent(resources, "leaf");
-
-                String lockId = getCurrent(resources, "lock");
-                if (lockId == null) {
-                    log.error("Please acquire lock first");
-                    return;
-                }
-
-                cf.setVersion(PosixPath.ofPosix(leaf), args[2], lockId);
-
-            } else if (test(args, "set", "property",  /* key */ "*", /* value */ "*")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
-
-                String ver = getCurrent(resources, "version");
-                if (ver != null) {
-                    log.error("Must not set property under version use. Please unuse version first...");
-                    return;
-                }
-
-                ct.setProperty(PosixPath.ofPosix(leaf), args[2], args[3]);
-                log.info("Property {}#{} has been set", leaf, args[2]);
-
-            } else if (test(args, "get", "property", /* key */ "*")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
-
-                String ver = getCurrent(resources, "version");
-                if (ver != null) {
-                    log.debug("Using version {}", ver);
-                    stdOUT.accept(cf.getProperty(ver, PosixPath.ofPosix(leaf), args[2]));
-                    return;
-                }
-                stdOUT.accept(ct.getProperty(PosixPath.ofPosix(leaf), args[2]));
-
-            } else if (test(args, "get", "queue", "offset")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
-
-                stdOUT.accept(cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash());
-
-            } else if (test(args, "get", "queue", "next")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
-
-                String currVersionHash = cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash();
-                String nextHash = getNextHash(src, currVersionHash);
-                stdOUT.accept(nextHash);
-
-            } else if (test(args, "get", "queue", "next-changes")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
-
-                String currVersionHash = cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash();
-                String nextHash = getNextHash(src, currVersionHash);
-
-                src.changes(currVersionHash, nextHash)
-                        .forEach(change -> stdOUT.accept(change.getFile()));
-            } else if (test(args, "get", "queue", "remaining")) {
-                String leaf = getCurrent(resources, "leaf");
-                if (missingLeaf(leaf)) return;
-                String currVersionHash = cf.getVersion(PosixPath.ofPosix(leaf)).getVersionHash();
-                src.commits().takeWhile(comm -> !comm.getHash().equals(currVersionHash))
-                        .map(comm -> comm.getHash())
-                        .forEach(stdOUT);
-
-            } else if (test(args, "shellenv")) {
-                terminal.eval(String.format("export VEZUVIO_HOME=\"%s\"", home));
+                withRequestTree(rt -> {
+                    ConfigVersions cBr = rt.getBranch(cBranch);
+                    cBr.setProperty(PosixPath.ofPosix(cLeaf), args[1], args[3]);
+                    cBr.commit();
+                    cBr.push();
+                });
             } else if (test(args, "--version")) {
                 stdOUT.accept(System.getProperty("version"));
             }
         }
-    }
-
-    private static String getNextHash(LocalSource src, String currVersionHash) {
-        Stream<VersionControl.Commit> next =
-                lastElements(src.commits()
-                        .takeWhile(comm -> !comm.getHash().startsWith(currVersionHash)), 1);
-        return next.findAny().get().getHash();
-    }
-
-    private static boolean missingLeaf(String leaf) {
-        if (leaf == null) {
-            log.error("Cannot list properties: Leaf has not been chosen yet. Please run 'use leaf [leaf]' first");
-            return true;
-        }
-        return false;
-    }
-
-    private void setCurrent(String value, PosixPath resources, String domain) {
-        fm.go(resources);
-        PosixPath audioPrefix = PosixPath.ofPosix(domain);
-        fm.remove(audioPrefix.climb("current"));
-        terminal.eval(
-                String.format(
-                        "ln -s %s %s",
-                        fm.makeDir(audioPrefix.climb(PosixPath.ofPosix(value))),
-                        audioPrefix.climb("current")
-                )
-        );
-    }
-
-    private void unSet(PosixPath resources, String domain) {
-        fm.go(resources);
-        PosixPath audioPrefix = PosixPath.ofPosix(domain);
-        fm.remove(audioPrefix.climb("current"));
-    }
-
-    private String getCurrent(PosixPath resources, String domain) {
-        PosixPath currentPath = resources.climb(domain, "current");
-        if (!fm.exists(currentPath)) {
-            return null;
-        }
-        PosixPath audioDevice = PosixPath.ofPosix(
-                terminal.eval(String.format("readlink %s", currentPath))
-        );
-
-        return audioDevice.relativize(resources.climb(domain)).toString();
     }
 
     private boolean test(String[] args, String arg1, String... argsOther) {
@@ -257,6 +186,45 @@ public class App {
                 .map(ArgsMatcher::exact)
                 .toList()
                 .equals(Arrays.stream(args).map(ArgsMatcher::escape).toList());
+    }
+
+
+    public void withRequestTree(Consumer<RequestTree> consumer) {
+        // master, request-001
+        Map<String, RemoteOrigin> cache = new HashMap<>();
+        Map<PosixPath, ConfigVersions> cache2 = new HashMap<>();
+        RequestTree rt = new RequestTree(
+                branchName -> cache.computeIfAbsent(branchName, ss ->
+                        {
+                            RemoteOrigin remoteOrigin = new RemoteOrigin(
+                                    getCOnf(STATE_ORIGIN_URL),
+                                    conf.getTerm(),
+                                    GitAuth.ofSshAgent(getCOnf(STATE_ORIGIN_AUTH).split(":")[1]),
+                                    branchName,
+                                    new GitConfigurations() {
+                                        @Override
+                                        public Path getHomeTemporaryDir() {
+                                            return conf.getVezuvioLocalHome().climb("tmp").toPath();
+                                        }
+                                    });
+                            remoteOrigin.setBranch(branchName);
+                            return remoteOrigin;
+                        }
+
+                ),
+                gitVersions -> {
+                    //fm.go(gitVersions.getLocation());
+                    return cache2.computeIfAbsent(gitVersions.getLocation(), (k) -> {
+                        ConfigTree ct = new ConfigTree(gitVersions.getDirectory());
+                        return new ConfigVersions(gitVersions, ct);
+                    });
+                }, "master", fm);
+
+        consumer.accept(rt);
+    }
+
+    private String getCOnf(String stateOriginUrl) {
+        return conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + stateOriginUrl);
     }
 
 }
