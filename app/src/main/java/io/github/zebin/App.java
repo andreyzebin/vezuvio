@@ -186,7 +186,7 @@ public class App {
                     cBr.push();
                 });
             } else if (test(args, "--version")) {
-                stdOUT.accept(System.getProperty("version"));
+                stdOUT.accept("0.0.1");
             }
         }
     }
