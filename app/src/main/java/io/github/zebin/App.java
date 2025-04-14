@@ -44,6 +44,20 @@ public class App {
         this.conf = conf;
     }
 
+    public static String fixWinPath(String corruptWinPath) {
+        String[] split = corruptWinPath.split(":");
+        boolean hasDisk = split.length > 1;
+        // boolean isAbsolute = hasDisk;
+
+        if (hasDisk) {
+            String disk = split[0];
+            String path = split[1];
+            return "/" + disk.toLowerCase() + path;
+        } else {
+            return corruptWinPath;
+        }
+    }
+
     public static void main(String[] args) {
         TextTerminal terminal = new FunnyTerminal(
                 new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
@@ -53,7 +67,7 @@ public class App {
         PosixPath wd;
         if (workingDirOverride != null) {
             log.info("Working directory is set via system property");
-            wd = PosixPath.ofPosix(workingDirOverride);
+            wd = PosixPath.ofPosix(fixWinPath(workingDirOverride));
             fm.go(wd);
         } else {
             log.info("Working directory is set from java process");
