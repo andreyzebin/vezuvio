@@ -206,7 +206,8 @@ public class App {
                 while (disk.length() > 1) {
                     disk = disk.descend();
                 }
-                return Path.of(disk.getEnd().toUpperCase() + ":").resolve(pp.relativize(disk).toPath());
+                return Path.of(disk.getEnd().toUpperCase() + ":\\")
+                        .resolve(pp.relativize(disk).toString().replace("/", "\\"));
             }
         }
         return pp.toPath();

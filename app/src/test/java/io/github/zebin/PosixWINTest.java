@@ -19,6 +19,7 @@ public class PosixWINTest {
         } else {
             Assertions.assertEquals(Path.of("/", "c", "Users"), PosixPath.ofPosix("/c/Users").toPath());
             Assertions.assertEquals(Path.of("Users"), PosixPath.ofPosix("Users").toPath());
+            Assertions.assertEquals(Path.of("/", "c", "Users"), App.toPath(PosixPath.ofPosix("/c/Users")));
         }
     }
 }
