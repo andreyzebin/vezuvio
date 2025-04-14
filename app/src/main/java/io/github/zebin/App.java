@@ -197,6 +197,21 @@ public class App {
                 .equals(Arrays.stream(args).map(ArgsMatcher::escape).toList());
     }
 
+    public static Path toPath(PosixPath pp) {
+        String osNameLowercased = System.getProperty("os.name").toLowerCase();
+        boolean isWindows = osNameLowercased.startsWith("windows");
+        if (isWindows) {
+            if (pp.isAbsolute()) {
+                PosixPath disk = pp;
+                while (disk.length() > 1) {
+                    disk = disk.descend();
+                }
+                return Path.of(disk.getEnd().toUpperCase() + ":").resolve(pp.relativize(disk).toPath());
+            }
+        }
+        return pp.toPath();
+    }
+
 
     public void withRequestTree(Consumer<RequestTree> consumer) {
         // master, request-001
