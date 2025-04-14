@@ -62,7 +62,7 @@ application {
         )
     } else {
         applicationDefaultJvmArgs = listOf(
-            "-Dlogger.root.level=INFO",
+            "-Dlogger.root.level=DEBUG",
             "-Dio.github.vezuvio.version=${version}"
         )
     }
