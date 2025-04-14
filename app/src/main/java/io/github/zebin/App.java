@@ -213,6 +213,18 @@ public class App {
         return pp.toPath();
     }
 
+    public static PosixPath ofPath(Path pp) {
+        String osNameLowercased = System.getProperty("os.name").toLowerCase();
+        boolean isWindows = osNameLowercased.startsWith("windows");
+        if (isWindows) {
+            if (pp.isAbsolute()) {
+                Path disk = pp.getRoot();
+                return PosixPath.ofPosix("/" + disk.toString().toLowerCase().replace("\\", "")
+                        .replace(":", "")).climb(PosixPath.of(disk.relativize(pp)));
+            }
+        }
+        return PosixPath.of(pp);
+    }
 
     public void withRequestTree(Consumer<RequestTree> consumer) {
         // master, request-001
