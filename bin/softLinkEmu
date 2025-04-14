@@ -5,6 +5,6 @@ VEZUVIO_HOME_DEFAULT=$(echo ~/.vezuvio)
 VEZUVIO_HOME=$VEZUVIO_HOME_DEFAULT
 
 # run it
-echo "Soft link emulation: $VEZUVIO_HOME/bin/vezuvio $@"
+# echo "Soft link emulation: $VEZUVIO_HOME/bin/vezuvio $@"
 # shellcheck disable=SC2145
 eval "$VEZUVIO_HOME/bin/vezuvio $@"
