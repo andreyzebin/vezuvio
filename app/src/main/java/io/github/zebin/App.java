@@ -228,7 +228,7 @@ public class App {
                                     new GitConfigurations() {
                                         @Override
                                         public Path getHomeTemporaryDir() {
-                                            return conf.getVezuvioLocalHome().climb("tmp").toPath();
+                                            return toPath(conf.getVezuvioLocalHome().climb("tmp"));
                                         }
                                     });
                             remoteOrigin.setBranch(branchName);
