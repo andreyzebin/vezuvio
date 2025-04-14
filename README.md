@@ -8,12 +8,12 @@
 
 ./gradlew app:run -PisProduction=1 --args='--version'
 ./gradlew app:run -PisProduction=1 --args='--system.properties'
-./gradlew app:run --args='list versions'
-./gradlew app:run --args='list branches'
-./gradlew app:run --args='use branch master'
-
-./gradlew app:run --args='list leafs'
-./gradlew app:run --args='use leaf foo/bar'
+./gradlew app:run --args='origins use ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git'
+./gradlew app:run --args='credentials use ssh-agent:~/.ssh/zebin'
+./gradlew app:run --args='branches list'
+./gradlew app:run --args='branches use master'
+./gradlew app:run --args='leafs list'
+./gradlew app:run --args='leafs use foo/bar'
 
 ./gradlew app:run --args='list properties'
 ./gradlew app:run --args='set io.github.gitOps.location babara/kad/abara'

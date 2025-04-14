@@ -98,13 +98,13 @@ public class App {
         String os = terminal.eval("echo $(uname)");
 
         if (test(args, "origins", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + ORIGINS_CURRENT, args[2]);
+            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + ORIGINS_CURRENT, args[2]);
         } else if (test(args, "credentials", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + CREDENTIALS_CURRENT, args[2]);
+            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + CREDENTIALS_CURRENT, args[2]);
         } else if (test(args, "branches", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
+            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
         } else if (test(args, "leafs", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
+            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
         } else if (test(args, "branches", "list")) {
             withRequestTree(rt -> {
                 rt.listBranches().forEach(stdOUT::accept);
@@ -249,7 +249,7 @@ public class App {
     }
 
     private String getCOnf(String prop) {
-        return conf.getConf().getEffectiveProperty(VirtualDirectoryTree.RUNTIME, IO_GITHUB_VEZUVIO + "." + prop);
+        return conf.getConf().getEffectiveProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + prop);
     }
 
 }
