@@ -255,7 +255,7 @@ public class App {
                             RemoteOrigin remoteOrigin = new RemoteOrigin(
                                     getCOnf(ORIGINS_CURRENT),
                                     fm,
-                                    GitAuth.ofSshAgent(getCOnf(CREDENTIALS_CURRENT).split(":")[1]),
+                                    getAuthStrategy(),
                                     branchName,
                                     new GitConfigurations() {
                                         @Override
@@ -282,6 +282,18 @@ public class App {
                 }, "master", fm);
 
         consumer.accept(rt);
+    }
+
+    private GitAuth getAuthStrategy() {
+        String[] authVals = getCOnf(CREDENTIALS_CURRENT).split(":");
+        String authType = authVals[0];
+        if (authType.equals("ssh-agent")) {
+            return GitAuth.ofSshAgent(authVals[1]);
+        } else if (authType.equals("user-token-env")) {
+            return AuthStrategy.userAndTokenEnv(authVals[1], authVals[2]);
+        }
+
+        throw new IllegalArgumentException("Unknown auth type: " + authType);
     }
 
     private String getCOnf(String prop) {
