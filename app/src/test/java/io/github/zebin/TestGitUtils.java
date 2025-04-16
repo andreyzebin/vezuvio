@@ -90,7 +90,7 @@ public class TestGitUtils {
 
                 Assertions.assertIterableEquals(
                         List.of("io.github.gitOps.location"),
-                        configTree.getEffectivePropertyKeys(PosixPath.ofPosix("foo/bar"))
+                        configTree.getEffectiveProperties(PosixPath.ofPosix("foo/bar")).keySet()
                 );
 
                 Assertions.assertEquals(

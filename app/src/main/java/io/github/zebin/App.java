@@ -110,6 +110,8 @@ public class App {
             conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
         } else if (test(args, "leafs", "use", "*")) {
             conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
+        } else if (test(args, "leafs", "drop")) {
+            conf.getConf().deleteProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
         } else if (test(args, "branches", "list")) {
             withRequestTree(rt -> {
                 rt.listBranches().forEach(stdOUT::accept);
@@ -120,7 +122,7 @@ public class App {
             withRequestTree(rt -> {
                 rt.getBranch(cBranch).getLeafs().map(PosixPath::toString).forEach(stdOUT);
             });
-        } else if (test(args, "changes", "list")) {
+        } else if (test(args, "changes", "explode")) {
             String cBranch = getCOnf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
@@ -128,7 +130,7 @@ public class App {
                 cBr.getExplodedChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
                         .entrySet()
                         .stream()
-                        .map(ce -> String.format("[%s] %s: %s -> %s",
+                        .map(ce -> String.format("%s %s: %s -> %s",
                                 ce.getKey().getKey(),
                                 ce.getKey().getValue(),
                                 ce.getValue().getBefore(),
@@ -151,25 +153,25 @@ public class App {
             stdOUT.accept(getCOnf(CREDENTIALS_CURRENT));
         } else if (test(args, "origins", "which")) {
             stdOUT.accept(getCOnf(ORIGINS_CURRENT));
-        } else if (test(args, "properties", "list", "--format=kEQv")) {
-            String cLeaf = getCOnf(LEAFS_CURRENT);
+        } else if (test(args, "properties", "list", "--format=lSPkEQv") ||
+                test(args, "properties", "list")) {
             String cBranch = getCOnf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                         ConfigVersions branch = rt.getBranch(cBranch);
-                        branch.getEffectivePropertyKeys(PosixPath.ofPosix(cLeaf))
-                                .forEach(cp -> stdOUT.accept(cp + "=" +
-                                        branch.getEffectiveProperty(PosixPath.ofPosix(cLeaf), cp)));
+                        branch.getProperties(branch.topVersion().get().getVersionHash())
+                                .forEach((k, v) -> stdOUT.accept(k.getKey() + " " + k.getValue() + "=" + v));
                     }
             );
-        } else if (test(args, "properties", "list")) {
-            String cLeaf = getCOnf(LEAFS_CURRENT);
+        } else if (test(args, "properties", "explode", "--format=lSPkEQv") ||
+                test(args, "properties", "explode")) {
             String cBranch = getCOnf(BRANCHES_CURRENT);
 
-            withRequestTree(rt ->
-                    rt.getBranch(cBranch).getEffectivePropertyKeys(PosixPath.ofPosix(cLeaf))
-                            .forEach(cp -> stdOUT.accept(cp))
-            );
+            withRequestTree(rt -> {
+                ConfigVersions branch = rt.getBranch(cBranch);
+                branch.getExplodedState(branch.topVersion().get().getVersionHash())
+                        .forEach((key, value) -> stdOUT.accept(key.getKey() + " " + key.getValue() + "=" + value));
+            });
         } else if (test(args, "properties", "*", "get")) {
             String cLeaf = getCOnf(LEAFS_CURRENT);
             String cBranch = getCOnf(BRANCHES_CURRENT);

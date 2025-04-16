@@ -58,6 +58,54 @@ class UserScenarioTest {
         Assertions.assertEquals(loc, runApp("properties " + myPropName + " get"));
     }
 
+    @Test
+    public void testChangesAPI2() {
+        setupOrigin();
+        runApp("branches use request-001");
+
+        runApp("leafs use foo/bar");
+        String loc = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName = "io.github.vu.myRandomProperty";
+        runApp(String.format("properties " + myPropName + " set %s", loc));
+
+        runApp("leafs use foo");
+        String loc1 = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName1 = "io.github.vu.myRandomProperty";
+        runApp(String.format("properties " + myPropName1 + " set %s", loc1));
+
+        Assertions.assertTrue(runApp("changes list").contains(myPropName));
+        runApp("changes merge");
+        Assertions.assertEquals("", runApp("changes list"));
+        runApp("branches use master");
+
+        runApp("leafs use foo/bar");
+        Assertions.assertEquals(loc, runApp("properties " + myPropName + " get"));
+    }
+
+    @Test
+    public void testPropsAPI2() {
+        setupOrigin();
+        runApp("branches use request-001");
+
+        runApp("leafs use foo/bar");
+        String loc = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName = "io.github.vu.myRandomProperty";
+        runApp(String.format("properties " + myPropName + " set %s", loc));
+
+        runApp("leafs use foo");
+        String loc1 = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName1 = "io.github.vu.myRandomProperty";
+        runApp(String.format("properties " + myPropName1 + " set %s", loc1));
+
+        runApp("leafs use foo/bar/wow");
+        String loc2 = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName2 = "io.github.vu.myRandomProperty";
+        runApp(String.format("properties " + myPropName2 + " set %s", loc2));
+
+        runApp("properties explode");
+        runApp("properties list");
+    }
+
 
     @Test
     public void testPropertiesAPI() {
@@ -91,6 +139,9 @@ class UserScenarioTest {
         runApp("leafs list");
         runApp("leafs use foo/bar");
         Assertions.assertEquals("foo/bar", runApp("leafs which"));
+
+        runApp("leafs drop");
+        Assertions.assertEquals("null", runApp("leafs which"));
     }
 
     @Test
@@ -133,6 +184,7 @@ class UserScenarioTest {
         runApp(String.format("properties io.github.vezuvio.lock.executorId delete", executorId));
         runApp(String.format("properties io.github.vezuvio.request.status set %s", "FINISHED"));
         runApp("properties list");
+        runApp("properties explode");
 
     }
 
@@ -169,6 +221,7 @@ class UserScenarioTest {
                 .paint("commit", TerminalPalette.YELLOW_BOLD)
                 .paint("get", TerminalPalette.YELLOW_BOLD)
                 .paint("set", TerminalPalette.RED_BOLD)
+                .paint("drop", TerminalPalette.RED_BOLD)
 
                 .paint("versions", TerminalPalette.GREEN_BOLD)
                 .paint("leafs", TerminalPalette.GREEN_BOLD)
