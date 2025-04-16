@@ -43,7 +43,7 @@ public class TestGitUtils {
             fm.go(repoMock);
 
             try (
-                    LocalSource ls = new LocalSource(repoMock.toPath(), te);
+                    LocalSource ls = new LocalSource(repoMock.toPath(), fm);
                     Writer stateJson = ls.getDirectory().put(PosixPath.ofPosix("state.json"))
             ) {
                 String oldestHash = ls.listCommits()
@@ -143,7 +143,7 @@ public class TestGitUtils {
                     .forEach(br -> {
                         try (RemoteOrigin remote = new RemoteOrigin(
                                 getURL(),
-                                tt.getTerminal(),
+                                tt,
                                 GitAuth.ofSshAgent("~/.ssh/zebin"),
                                 "request-001",
                                 new GitConfigurations() {
@@ -151,8 +151,10 @@ public class TestGitUtils {
                                     public Path getHomeTemporaryDir() {
                                         return tmp.toPath();
                                     }
-                                }
-                        )) {
+                                },
+                                WorkingDirectory::new
+                        )
+                        ) {
                             remote.withTerminal(ttt -> {
                                 ttt.eval(String.format("git push -d origin %s", br.getName()));
                             });
