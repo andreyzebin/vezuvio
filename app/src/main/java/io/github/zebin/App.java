@@ -151,6 +151,17 @@ public class App {
             stdOUT.accept(getCOnf(CREDENTIALS_CURRENT));
         } else if (test(args, "origins", "which")) {
             stdOUT.accept(getCOnf(ORIGINS_CURRENT));
+        } else if (test(args, "properties", "list", "--format=kEQv")) {
+            String cLeaf = getCOnf(LEAFS_CURRENT);
+            String cBranch = getCOnf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                        ConfigVersions branch = rt.getBranch(cBranch);
+                        branch.getEffectivePropertyKeys(PosixPath.ofPosix(cLeaf))
+                                .forEach(cp -> stdOUT.accept(cp + "=" +
+                                        branch.getEffectiveProperty(PosixPath.ofPosix(cLeaf), cp)));
+                    }
+            );
         } else if (test(args, "properties", "list")) {
             String cLeaf = getCOnf(LEAFS_CURRENT);
             String cBranch = getCOnf(BRANCHES_CURRENT);
