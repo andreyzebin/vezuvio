@@ -40,6 +40,24 @@ class UserScenarioTest {
         git.reset();
     }
 
+    @Test
+    public void testChangesAPI() {
+        setupOrigin();
+
+        runApp("leafs use foo/bar");
+        runApp("branches use request-001");
+
+        String loc = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName = "io.github.vu.myRandomProperty";
+
+        runApp(String.format("properties " + myPropName + " set %s", loc));
+        Assertions.assertTrue(runApp("changes list").contains(myPropName));
+        runApp("changes merge");
+        Assertions.assertEquals("", runApp("changes list"));
+        runApp("branches use master");
+        Assertions.assertEquals(loc, runApp("properties " + myPropName + " get"));
+    }
+
 
     @Test
     public void testPropertiesAPI() {
@@ -47,17 +65,32 @@ class UserScenarioTest {
 
         runApp("branches list");
         runApp("branches use master");
-        Assertions.assertEquals("master", runApp("branches.current which"));
+        Assertions.assertEquals("master", runApp("branches which"));
 
         runApp("leafs list");
         runApp("leafs use foo/bar");
-        Assertions.assertEquals("foo/bar", runApp("leafs.current which"));
+        Assertions.assertEquals("foo/bar", runApp("leafs which"));
 
-        runApp("properties list");
-        runApp("properties io.github.gitOps.location get");
-        String loc = "https://abc.def/ghi";
-        runApp("properties io.github.gitOps.location set " + loc);
-        Assertions.assertEquals(loc, runApp("properties io.github.gitOps.location get"));
+        String loc = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName = "io.github.vu.myRandomProperty";
+        runApp(String.format("properties " + myPropName + " set %s", loc));
+
+        Assertions.assertTrue(runApp("properties list").contains(myPropName));
+        Assertions.assertEquals(loc, runApp("properties " + myPropName + " get"));
+
+    }
+
+    @Test
+    public void testCursorAPI() {
+        setupOrigin();
+
+        runApp("branches list");
+        runApp("branches use master");
+        Assertions.assertEquals("master", runApp("branches which"));
+
+        runApp("leafs list");
+        runApp("leafs use foo/bar");
+        Assertions.assertEquals("foo/bar", runApp("leafs which"));
     }
 
     @Test
@@ -69,23 +102,7 @@ class UserScenarioTest {
         runApp("properties prop2 set " + "def");
         runApp("properties prop1 delete");
         Assertions.assertEquals("def", runApp("properties prop2 get"));
-    }
-
-    @Test
-    public void testChangesAPI() {
-        setupOrigin();
-        runApp("leafs use foo/bar");
-
-        runApp("branches use master");
-        runApp("properties io.github.gitOps.location get");
-
-        runApp("branches use request-001");
-        runApp("changes list");
-        runApp("changes merge");
-        Assertions.assertEquals("", runApp("changes list"));
-
-        runApp("branches use master");
-        runApp("properties io.github.gitOps.location get");
+        Assertions.assertEquals("null", runApp("properties prop1 get"));
     }
 
     @Test
@@ -121,13 +138,13 @@ class UserScenarioTest {
 
     @Test
     void setupOrigin() {
-        runApp("state.origin.url use ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git");
-        runApp("state.origin.auth use ssh-agent:~/.ssh/zebin");
+        runApp("origins use ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git");
+        runApp("credentials use ssh-agent:~/.ssh/zebin");
 
         Assertions.assertEquals("ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git",
-                runApp("state.origin.url which"));
+                runApp("origins which"));
         Assertions.assertEquals("ssh-agent:~/.ssh/zebin",
-                runApp("state.origin.auth which"));
+                runApp("credentials which"));
     }
 
     private static String decode(String s) {
