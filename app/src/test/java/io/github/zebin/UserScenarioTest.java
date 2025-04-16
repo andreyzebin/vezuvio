@@ -216,6 +216,7 @@ class UserScenarioTest {
                 .paint("delete", TerminalPalette.RED_BOLD)
                 .paint("merge", TerminalPalette.YELLOW_BOLD)
                 .paint("list", TerminalPalette.YELLOW_BOLD)
+                .paint("explode", TerminalPalette.YELLOW_BOLD)
                 .paint("use", TerminalPalette.RED_BOLD)
                 .paint("which", TerminalPalette.YELLOW_BOLD)
                 .paint("commit", TerminalPalette.YELLOW_BOLD)

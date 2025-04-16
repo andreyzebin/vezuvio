@@ -137,6 +137,21 @@ public class App {
                                 ce.getValue().getAfter()))
                         .forEach(stdOUT);
             });
+        } else if (test(args, "changes", "list")) {
+            String cBranch = getCOnf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.getChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
+                        .entrySet()
+                        .stream()
+                        .map(ce -> String.format("%s %s: %s -> %s",
+                                ce.getKey().getKey(),
+                                ce.getKey().getValue(),
+                                ce.getValue().getBefore(),
+                                ce.getValue().getAfter()))
+                        .forEach(stdOUT);
+            });
         } else if (test(args, "changes", "merge")) {
             String cBranch = getCOnf(BRANCHES_CURRENT);
 
