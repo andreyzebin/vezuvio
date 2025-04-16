@@ -164,17 +164,19 @@ class UserScenarioTest {
                 .paint("delete", TerminalPalette.RED_BOLD)
                 .paint("merge", TerminalPalette.YELLOW_BOLD)
                 .paint("list", TerminalPalette.YELLOW_BOLD)
-                .paint("use", TerminalPalette.YELLOW_BOLD)
+                .paint("use", TerminalPalette.RED_BOLD)
                 .paint("which", TerminalPalette.YELLOW_BOLD)
                 .paint("commit", TerminalPalette.YELLOW_BOLD)
                 .paint("get", TerminalPalette.YELLOW_BOLD)
-                .paint("set", TerminalPalette.YELLOW_BOLD)
+                .paint("set", TerminalPalette.RED_BOLD)
 
                 .paint("versions", TerminalPalette.GREEN_BOLD)
                 .paint("leafs", TerminalPalette.GREEN_BOLD)
                 .paint("branches", TerminalPalette.GREEN_BOLD)
                 .paint("changes", TerminalPalette.GREEN_BOLD)
                 .paint("properties", TerminalPalette.GREEN_BOLD)
+                .paint("origins", TerminalPalette.GREEN_BOLD)
+                .paint("credentials", TerminalPalette.GREEN_BOLD)
                 .toString();
 
         log.info(cmdRender);
