@@ -3,11 +3,14 @@
  */
 package io.github.zebin;
 
+import io.github.andreyzebin.gitSql.cache.FileManagerCacheProxy;
+import io.github.andreyzebin.gitSql.cache.GitFsCacheProxy;
 import io.github.andreyzebin.gitSql.config.ConfigTree;
 import io.github.andreyzebin.gitSql.config.ConfigVersions;
 import io.github.andreyzebin.gitSql.config.RequestTree;
 import io.github.andreyzebin.gitSql.git.GitAuth;
 import io.github.andreyzebin.gitSql.git.GitConfigurations;
+import io.github.andreyzebin.gitSql.git.GitFs;
 import io.github.andreyzebin.gitSql.git.RemoteOrigin;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
@@ -15,6 +18,7 @@ import io.github.zebin.javabash.process.TextTerminal;
 import io.github.zebin.javabash.sandbox.BashUtils;
 import io.github.zebin.javabash.sandbox.FileManager;
 import io.github.zebin.javabash.sandbox.PosixPath;
+import io.github.zebin.javabash.sandbox.WorkingDirectory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
@@ -22,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -228,14 +233,17 @@ public class App {
 
     public void withRequestTree(Consumer<RequestTree> consumer) {
         // master, request-001
-        Map<String, RemoteOrigin> cache = new HashMap<>();
+        AtomicReference<String> cControl = new AtomicReference<>();
+        FileManagerCacheProxy fm = FileManagerCacheProxy.cachedProxy(new FileManager(conf.getTerm()), cControl);
+
+        Map<String, GitFs> cache = new HashMap<>();
         Map<PosixPath, ConfigVersions> cache2 = new HashMap<>();
         RequestTree rt = new RequestTree(
                 branchName -> cache.computeIfAbsent(branchName, ss ->
                         {
                             RemoteOrigin remoteOrigin = new RemoteOrigin(
                                     getCOnf(ORIGINS_CURRENT),
-                                    conf.getTerm(),
+                                    fm,
                                     GitAuth.ofSshAgent(getCOnf(CREDENTIALS_CURRENT).split(":")[1]),
                                     branchName,
                                     new GitConfigurations() {
@@ -243,9 +251,14 @@ public class App {
                                         public Path getHomeTemporaryDir() {
                                             return toPath(conf.getVezuvioLocalHome().climb("tmp"));
                                         }
-                                    });
-                            remoteOrigin.setBranch(branchName);
-                            return remoteOrigin;
+                                    },
+                                    WorkingDirectory::new
+                            );
+
+                            GitFsCacheProxy gfs = GitFsCacheProxy.cachedProxy(remoteOrigin, cControl);
+                            gfs.addListener(fm);
+                            gfs.setBranch(branchName);
+                            return gfs;
                         }
 
                 ),

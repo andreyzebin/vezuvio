@@ -15,6 +15,9 @@
 ./gradlew app:run --args='leafs list'
 ./gradlew app:run --args='leafs use foo/bar'
 
+./gradlew app:run --args='branches use request-001'
+./gradlew app:run --args='changes list'
+
 ./gradlew app:run --args='list properties'
 ./gradlew app:run --args='set io.github.gitOps.location babara/kad/abara'
 ./gradlew app:run --args='get io.github.gitOps.location'
