@@ -43,8 +43,12 @@ fi
 # SCRIPTPATH=$(dirname "$SCRIPT")
 
 # shellcheck disable=SC2116
-VEZUVIO_HOME_DEFAULT=$(echo ~/.vezuvio)
-VEZUVIO_HOME=$VEZUVIO_HOME_DEFAULT
+VEZUVIO_HOME_USER_LEVEL=$(echo ~/.vezuvio)
+VEZUVIO_HOME_WORK_DIR_LEVEL=$(echo .vezuvio)
+VEZUVIO_HOME=$VEZUVIO_HOME_USER_LEVEL
+if [[ -d "${VEZUVIO_HOME_WORK_DIR_LEVEL}" ]]; then
+  VEZUVIO_HOME=$VEZUVIO_HOME_WORK_DIR_LEVEL
+fi
 
 currentDir=$(pwd)
 # Check the number of arguments
