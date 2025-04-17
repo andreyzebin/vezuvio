@@ -55,7 +55,6 @@ vuApp() {
 
   cd "${VEZUVIO_HOME}"/repository || exit
   argsV=$(echo "$@")
-  echo --args=\""$argsV"\"
   gradle  app:run -PisProduction=true  -PworkingDirectory="${currentDir}" --args=\""$argsV"\"
   cd "${currentDir}" || exit
 }
