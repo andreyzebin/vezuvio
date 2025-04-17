@@ -60,11 +60,11 @@ if [[ -n "${CI-}" ]]
 then
   echo "Running in CI -  Working directory level install";
   echo "Working directory is $(pwd)";
-  echo "In order to run - use: $(pwd)/.vezuvio/bin/vezuvio";
 
   # shellcheck disable=SC2116
   vezuvioHome=$(echo "$(pwd)"/.vezuvio/bin/vezuvio)
   export VEZUVIO_HOME=$vezuvioHome
+  echo "In order to run - use: $VEZUVIO_HOME/bin/vezuvio";
 else
   if [ -x /usr/bin/sudo ]; then
       echo "You are an admin - OS level install";
@@ -570,7 +570,9 @@ done
 logTitleL1 "This script will install:"
 echo "${VEZUVIO_HOME}/repository/"
 echo "${VEZUVIO_HOME}/*"
-echo "${VEZUVIO_HOME}/bin/vezuvio"
+echo "${VEZUVIO_HOME}/bin/*"
+echo "${VEZUVIO_HOME}/etc/*"
+echo "${VEZUVIO_HOME}/repository/*"
 if [[ ! -n "${CI-}" ]]
 then
   echo "${LOCAL_APPS_PATH}/vezuvio"
