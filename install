@@ -63,7 +63,7 @@ then
   echo "In order to run - use: .vezuvio/bin/vezuvio";
 
   # shellcheck disable=SC2116
-  vezuvioHome=$(echo .vezuvio)
+  vezuvioHome=$(echo ./.vezuvio)
   export VEZUVIO_HOME=$vezuvioHome
 else
   if [ -x /usr/bin/sudo ]; then
