@@ -60,7 +60,7 @@ vuApp() {
     includeBuild="--include-build $IO_GITHUB_VESUVIUS_GRADLE_INIT"
     gradle "${includeBuild}" build
   fi
-  gradle "${includeBuild}" app:run -PisProduction=true  -PworkingDirectory="${currentDir}" --args=\""$argsV"\"
+  gradle app:run -PisProduction=true  -PworkingDirectory="${currentDir}" --args=\""$argsV"\"
   cd "${currentDir}" || exit
 }
 
