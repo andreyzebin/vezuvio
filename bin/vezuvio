@@ -50,7 +50,13 @@ if [[ -d "${VEZUVIO_HOME_WORK_DIR_LEVEL}" ]]; then
   VEZUVIO_HOME=$VEZUVIO_HOME_WORK_DIR_LEVEL
 fi
 
-currentDir=$(pwd)
+vuApp() {
+  currentDir=$(pwd)
+  ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" -args="$(shell_join "$@")"
+}
+
+
+
 # Check the number of arguments
 if [ "$#" -lt 1 ]; then
     echo "Missing arguments"
@@ -58,33 +64,5 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
-if [ "$#" -eq 1 ]; then
-    cd "${VEZUVIO_HOME}"/repository || exit
-    ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1"
-    cd "${currentDir}"  || exit
-elif [ "$#" -eq 2 ]; then
-    cd "${VEZUVIO_HOME}"/repository || exit
-    ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2"
-    cd "${currentDir}"  || exit
-elif [ "$#" -eq 3 ]; then
-    cd "${VEZUVIO_HOME}"/repository || exit
-    ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3"
-    cd "${currentDir}" || exit
-elif [ "$#" -eq 4 ]; then
-    cd "${VEZUVIO_HOME}"/repository || exit
-    ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3 $4"
-    cd "${currentDir}" || exit
-elif [ "$#" -eq 5 ]; then
-    cd "${VEZUVIO_HOME}"/repository || exit
-    ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3 $4 $5"
-    cd "${currentDir}" || exit
-elif [ "$#" -eq 6 ]; then
-    cd "${VEZUVIO_HOME}"/repository || exit
-    ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" --args="$1 $2 $3 $4 $5 $6"
-    cd "${currentDir}" || exit
-else
-    echo "Too many arguments"
-    echo "Usage: vezuvio <arg1> <arg2>"
-    exit 1
-fi
+vuApp "$@"
 
