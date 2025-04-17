@@ -568,6 +568,7 @@ done
 
 logTitleL1 "This script will install:"
 echo "${VEZUVIO_HOME}/repository/"
+echo "${VEZUVIO_HOME}/*"
 echo "${VEZUVIO_HOME}/bin/vezuvio"
 if [[ ! -n "${CI-}" ]]
 then
