@@ -66,7 +66,8 @@ then
   vezuvioHome=$(echo "$(pwd)"/.vezuvio)
   export VEZUVIO_HOME=$vezuvioHome
   export VEZUVIO_HOME_PARENT=$(echo "$(pwd)")
-  echo "In order to run - use: $VEZUVIO_HOME/bin/vezuvio";
+  echo "In order to run - use: $VEZUVIO_HOME/bin/vezuvio, ";
+  echo "  or, while in current directory, just: ./.vezuvio/bin/vezuvio";
 else
   if [ -x /usr/bin/sudo ]; then
       echo "You are an admin - OS level install";
