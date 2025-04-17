@@ -58,8 +58,9 @@ vuApp() {
   includeBuild=""
   if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
     includeBuild="--init-script=$IO_GITHUB_VESUVIUS_GRADLE_INIT"
+    gradle build "${includeBuild}"
   fi
-  gradle "${includeBuild}" app:run -PisProduction=true -PworkingDirectory="${currentDir}" --args=\""$argsV"\"
+  gradle app:run -PisProduction=true -PworkingDirectory="${currentDir}" --args=\""$argsV"\"
   cd "${currentDir}" || exit
 }
 
