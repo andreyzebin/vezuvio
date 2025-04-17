@@ -39,6 +39,7 @@ set -u
 unset USE_SOFT_LINK_EMULATION
 unset USE_GRADLE_WRAPPER
 unset USE_INTERACTIVE_ELEVATION
+unset VEZUVIO_HOME
 
 
 # default path when you have an Admin rights
@@ -57,15 +58,28 @@ fi
 
 if [[ -n "${CI-}" ]]
 then
-  echo "running in CI - CI install";
+  echo "Running in CI -  Working directory level install";
+  echo "In order to run - use: .vezuvio/bin/vezuvio";
+
+  # shellcheck disable=SC2116
+  vezuvioHome=$(echo .vezuvio)
+  export VEZUVIO_HOME=$vezuvioHome
 else
   if [ -x /usr/bin/sudo ]; then
-      echo "you are an admin - home install";
+      echo "You are an admin - OS level install";
       USE_GRADLE_WRAPPER=1
       USE_INTERACTIVE_ELEVATION=1
+
+      # shellcheck disable=SC2116
+        vezuvioHome=$(echo ~/.vezuvio)
+        export VEZUVIO_HOME=$vezuvioHome
   else
-      echo "you are not an admin - office install";
+      echo "You are not an admin - User level install";
       LOCAL_APPS_PATH=$USABLE_PATHS_HOME_BIN
+
+      # shellcheck disable=SC2116
+        vezuvioHome=$(echo ~/.vezuvio)
+        export VEZUVIO_HOME=$vezuvioHome
   fi
 fi
 
@@ -215,10 +229,6 @@ then
 else
   abort "Vesuvius is only supported on macOS and Linux."
 fi
-
-# shellcheck disable=SC2116
-vezuvioHome=$(echo ~/.vezuvio)
-export VEZUVIO_HOME=$vezuvioHome
 
 execute() {
   if ! "$@"
@@ -559,7 +569,10 @@ done
 logTitleL1 "This script will install:"
 echo "${VEZUVIO_HOME}/repository/"
 echo "${VEZUVIO_HOME}/bin/vezuvio"
-echo "${LOCAL_APPS_PATH}/vezuvio"
+if [[ ! -n "${CI-}" ]]
+then
+  echo "${LOCAL_APPS_PATH}/vezuvio"
+fi
 
 vezuvioTest () {
         # shellcheck disable=SC2139
