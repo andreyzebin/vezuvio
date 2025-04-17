@@ -79,7 +79,9 @@ public class App {
             wd = fm.getCurrent();
         }
 
-        Configurations cnf = new Configurations(wd, terminal);
+        Configurations cnf = new Configurations(wd, terminal, fm.dirExists(wd.climb(".vezuvio")) ?
+                VirtualDirectoryTree.LOCAL :
+                VirtualDirectoryTree.USER);
         new App(System.out::println, System.err::println, cnf).run(args);
     }
 
@@ -103,13 +105,13 @@ public class App {
         String os = terminal.eval("echo $(uname)");
 
         if (test(args, "origins", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + ORIGINS_CURRENT, args[2]);
+            setProp(ORIGINS_CURRENT, args);
         } else if (test(args, "credentials", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + CREDENTIALS_CURRENT, args[2]);
+            setProp(CREDENTIALS_CURRENT, args);
         } else if (test(args, "branches", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + BRANCHES_CURRENT, args[2]);
+            setProp(BRANCHES_CURRENT, args);
         } else if (test(args, "leafs", "use", "*")) {
-            conf.getConf().setProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT, args[2]);
+            setProp(LEAFS_CURRENT, args);
         } else if (test(args, "leafs", "drop")) {
             conf.getConf().deleteProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
         } else if (test(args, "branches", "list")) {
@@ -221,6 +223,10 @@ public class App {
                     .forEach((key, value) ->
                             stdOUT.accept(String.format("%s=%s", key, value)));
         }
+    }
+
+    private void setProp(String originsCurrent, String[] args) {
+        conf.getConf().setProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + originsCurrent, args[2]);
     }
 
     private boolean test(String[] args, String arg1, String... argsOther) {

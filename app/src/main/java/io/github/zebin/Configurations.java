@@ -13,15 +13,21 @@ public class Configurations {
     private final PosixPath wd;
     private final TextTerminal term;
     private final FileManager fm;
+    private final PosixPath configLevel;
 
-    public Configurations(PosixPath wd, TextTerminal term) {
+    public Configurations(PosixPath wd, TextTerminal term, PosixPath level) {
         this.wd = wd;
         this.term = term;
         this.fm = new FileManager(term);
+        this.configLevel = level;
     }
 
     public PosixPath getWorkDir() {
         return wd;
+    }
+
+    public PosixPath getConfLevel() {
+        return configLevel;
     }
 
     public PosixPath getUserHomeDir() {

@@ -246,7 +246,7 @@ class UserScenarioTest {
         }, (line) -> {
             sb.append(line);
             sb.append(System.lineSeparator());
-        }, new Configurations(fm.getCurrent(), terminal));
+        }, new Configurations(fm.getCurrent(), terminal, VirtualDirectoryTree.USER));
         app.run(s.split(" "));
         sb.toString().lines().forEach(cl -> log.info("> " + newCanvas(cl)
                 //.fill(TerminalPalette.BLUE)
