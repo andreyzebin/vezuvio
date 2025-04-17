@@ -82,6 +82,8 @@ also, if you are using gradle 7.x.x
 
 Install for CI
 ```bash
+export IO_GITHUB_VESUVIUS_GRADLE_INIT="$(pwd)/test-environment/init.gradle"
+
 CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install)"
 alias vezuvio="$VEZUVIO_HOME/bin/vezuvio"
 ```
