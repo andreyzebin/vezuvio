@@ -105,13 +105,13 @@ public class App {
         String os = terminal.eval("echo $(uname)");
 
         if (test(args, "origins", "use", "*")) {
-            setProp(ORIGINS_CURRENT, args);
+            setConf(ORIGINS_CURRENT, args);
         } else if (test(args, "credentials", "use", "*")) {
-            setProp(CREDENTIALS_CURRENT, args);
+            setConf(CREDENTIALS_CURRENT, args);
         } else if (test(args, "branches", "use", "*")) {
-            setProp(BRANCHES_CURRENT, args);
+            setConf(BRANCHES_CURRENT, args);
         } else if (test(args, "leafs", "use", "*")) {
-            setProp(LEAFS_CURRENT, args);
+            setConf(LEAFS_CURRENT, args);
         } else if (test(args, "leafs", "drop")) {
             conf.getConf().deleteProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
         } else if (test(args, "branches", "list")) {
@@ -225,8 +225,12 @@ public class App {
         }
     }
 
-    private void setProp(String originsCurrent, String[] args) {
+    private void setConf(String originsCurrent, String[] args) {
         conf.getConf().setProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + originsCurrent, args[2]);
+    }
+
+    private String getCOnf(String prop) {
+        return conf.getConf().getEffectiveProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + prop);
     }
 
     private boolean test(String[] args, String arg1, String... argsOther) {
@@ -317,10 +321,6 @@ public class App {
         }
 
         throw new IllegalArgumentException("Unknown auth type: " + authType);
-    }
-
-    private String getCOnf(String prop) {
-        return conf.getConf().getEffectiveProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + prop);
     }
 
 }
