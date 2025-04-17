@@ -52,7 +52,10 @@ fi
 
 vuApp() {
   currentDir=$(pwd)
-  ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" -args="$(shell_join "$@")"
+
+  cd "${VEZUVIO_HOME}"/repository || exit
+  ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" -args=""$@""
+  cd "${currentDir}" || exit
 }
 
 
