@@ -1,0 +1,10 @@
+settingsEvaluated {
+    // def with = rootProject.projectDir.toString().startsWith("path/to/my/side/projects/folder")
+
+    pluginManagement {
+        repositories {
+            gradlePluginPortal()
+            mavenLocal()
+        }
+    }
+}
