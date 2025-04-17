@@ -56,7 +56,7 @@ vuApp() {
   cd "${VEZUVIO_HOME}"/repository || exit
   argsV=$(echo "$@")
   includeBuild=""
-  if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
+  if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT}" ]]; then
     includeBuild="--include-build $IO_GITHUB_VESUVIUS_GRADLE_INIT"
   fi
   gradle "${includeBuild}" app:run -PisProduction=true  -PworkingDirectory="${currentDir}" --args=\""$argsV"\"
