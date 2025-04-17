@@ -54,11 +54,9 @@ vuApp() {
   currentDir=$(pwd)
 
   cd "${VEZUVIO_HOME}"/repository || exit
-  ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" -args=""$@""
+  ./gradlew --console=plain app:run -PisProduction=true -Dorg.gradle.logging.level=quiet -PworkingDirectory="${currentDir}" -args="$@"
   cd "${currentDir}" || exit
 }
-
-
 
 # Check the number of arguments
 if [ "$#" -lt 1 ]; then
