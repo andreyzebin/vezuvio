@@ -150,7 +150,7 @@ warn() {
 
 usage() {
   cat <<EOS
-Tray Installer
+Vesuvius Installer
 Usage: [NONINTERACTIVE=1] [CI=1] install.sh [options]
     -h, --help       Display this message.
     NONINTERACTIVE   Install without prompting for user input
@@ -213,7 +213,7 @@ elif [[ "${OS}" == MINGW* ]]
 then
   VEZUVIO_ON_MINGW=1
 else
-  abort "Tray is only supported on macOS and Linux."
+  abort "Vesuvius is only supported on macOS and Linux."
 fi
 
 # shellcheck disable=SC2116
@@ -251,7 +251,7 @@ MACOS_NEWEST_UNSUPPORTED="16.0"
 # TODO: bump version when new macOS is released
 MACOS_OLDEST_SUPPORTED="13.0"
 
-# For Tray on Linux
+# For Vesuvius on Linux
 REQUIRED_CURL_VERSION=7.41.0
 REQUIRED_GIT_VERSION=2.7.0
 REQUIRED_GRADLE_VERSION=7.5.0
@@ -349,7 +349,7 @@ which() {
   type -P "$@"
 }
 
-# Search PATH for the specified program that satisfies Tray requirements
+# Search PATH for the specified program that satisfies Vesuvius requirements
 # function which is set above
 # shellcheck disable=SC2230
 find_tool() {
@@ -422,7 +422,7 @@ elif ! [[ -w "${VEZUVIO_HOME}" ]] &&
 then
   abort "$(
     cat <<EOABORT
-Insufficient permissions to install Tray to "${VEZUVIO_HOME}" (the default prefix).
+Insufficient permissions to install Vesuvius to "${VEZUVIO_HOME}" (the default prefix).
 EOABORT
   )"
 fi
@@ -431,7 +431,7 @@ fi
 
 if [[ -d "${VEZUVIO_HOME}" && ! -x "${VEZUVIO_HOME}" ]]
 then
-  abort "The Tray home ${tty_underline}${VEZUVIO_HOME}${tty_reset} exists but is not searchable. Use sudo chmod 775 ${VEZUVIO_HOME}"
+  abort "The Vesuvius home ${tty_underline}${VEZUVIO_HOME}${tty_reset} exists but is not searchable. Use sudo chmod 775 ${VEZUVIO_HOME}"
 fi
 
 if [[ -n "${VEZUVIO_ON_MACOS-}" ]]
@@ -473,11 +473,11 @@ then
   USABLE_GIT="$(find_tool git)"
   if [[ -z "$(command -v git)" ]]
   then
-    abort "You must install Git before installing Tray."
+    abort "You must install Git before installing Vesuvius."
   fi
   if [[ -z "${USABLE_GIT}" ]]
   then
-    abort "The version of Git that was found does not satisfy requirements for Tray."
+    abort "The version of Git that was found does not satisfy requirements for Vesuvius."
   fi
   if [[ "${USABLE_GIT}" != /usr/bin/git ]]
   then
@@ -488,13 +488,13 @@ fi
 
 if ! command -v curl >/dev/null
 then
-  abort "You must install cURL before installing Tray."
+  abort "You must install cURL before installing Vesuvius."
 elif [[ -n "${VEZUVIO_ON_LINUX-}" || -n "${VEZUVIO_ON_MINGW-}" ]]
 then
   USABLE_CURL="$(find_tool curl)"
   if [[ -z "${USABLE_CURL}" ]]
   then
-    abort "The version of cURL that was found does not satisfy requirements for Tray."
+    abort "The version of cURL that was found does not satisfy requirements for Vesuvius."
   elif [[ "${USABLE_CURL}" != /usr/bin/curl ]]
   then
     export VEZUVIO_CURL_PATH="${USABLE_CURL}"
@@ -506,13 +506,13 @@ fi
 if [ -z "${USE_GRADLE_WRAPPER-}" ]; then
   if ! command -v gradle >/dev/null
   then
-    abort "You must install Gradle before installing Tray."
+    abort "You must install Gradle before installing Vesuvius."
   elif [[ -n "${VEZUVIO_ON_LINUX-}" || -n "${VEZUVIO_ON_MINGW-}" ]]
   then
     USABLE_GRADLE="$(find_tool gradle)"
     if [[ -z "${USABLE_GRADLE}" ]]
     then
-      abort "The version of Gradle that was found does not satisfy requirements for Tray."
+      abort "The version of Gradle that was found does not satisfy requirements for Vesuvius."
     elif [[ "${USABLE_GRADLE}" != /usr/bin/gradle ]]
     then
       export VEZUVIO_GRADLE_PATH="${USABLE_GRADLE}"
