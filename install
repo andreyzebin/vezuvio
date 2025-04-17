@@ -60,7 +60,7 @@ if [[ -n "${CI-}" ]]
 then
   echo "Running in CI -  Working directory level install";
   echo "Working directory is $(pwd)";
-  echo "In order to run - use: .vezuvio/bin/vezuvio";
+  echo "In order to run - use: ./.vezuvio/bin/vezuvio";
 
   # shellcheck disable=SC2116
   vezuvioHome=$(echo ./.vezuvio)
