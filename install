@@ -42,7 +42,6 @@ unset USE_INTERACTIVE_ELEVATION
 unset VEZUVIO_HOME
 unset VEZUVIO_HOME_PARENT
 
-
 # default path when you have an Admin rights
 USABLE_PATHS_LOCAL_BIN="/usr/local/bin"
 
