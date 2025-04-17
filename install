@@ -62,7 +62,7 @@ then
   echo "Working directory is $(pwd)";
 
   # shellcheck disable=SC2116
-  vezuvioHome=$(echo "$(pwd)"/.vezuvio/bin/vezuvio)
+  vezuvioHome=$(echo "$(pwd)"/.vezuvio)
   export VEZUVIO_HOME=$vezuvioHome
   echo "In order to run - use: $VEZUVIO_HOME/bin/vezuvio";
 else
