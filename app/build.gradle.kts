@@ -10,7 +10,7 @@ import java.util.Properties
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
-    id("io.freefair.lombok") version "8.12.2"
+    // id("io.freefair.lombok") version "8.12.2"
 }
 
 var logbackVersion = "1.5.6"
@@ -34,6 +34,12 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
     implementation("org.codehaus.janino:janino:3.1.12")
+
+    compileOnly("org.projectlombok:lombok:1.18.38")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
+
+    testCompileOnly("org.projectlombok:lombok:1.18.38")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 
 }
 
