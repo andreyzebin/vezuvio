@@ -640,16 +640,19 @@ currentDir=$(pwd)
       logTitleL1 " - Testing if sources are buildable..."
       execute "${USABLE_GRADLE}" -PisProduction=1 clean build -x test
       logTitleL1 " - Executing: 'vezuvio --version'..."
-      vuTest --version
     else
       logTitleL1 " - Executing: 'vezuvio --version'..."
-      vuTest --version
     fi
 } || {
     cd "$currentDir"
     abort "Installation failed!"
 }
 cd "$currentDir"
+{
+  vuTest --version
+} || {
+    abort "Installation check failed!"
+}
 logTitleL1 "Installation successful!"
 
 # export JAVA_HOME=/c/Users/THINKPAD/.gradle/jdks/eclipse_adoptium-17-amd64-windows.2
