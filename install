@@ -601,6 +601,8 @@ currentDir=$(pwd)
       execute "${USABLE_GIT}" clone https://github.com/andreyzebin/vezuvio.git repository
     fi
     cd repository
+    logTitleL1 " - Clean up build dir..."
+    rm -rf "app/build"
     logTitleL1 " - Pulling latest vezuvio sources..."
     execute "${USABLE_GIT}" pull
 
