@@ -27,7 +27,7 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("io.github.andreyzebin:java-bash:0.0.14")
-    implementation("io.github.andreyzebin:java-git:0.0.3")
+    implementation("io.github.andreyzebin:java-git:0.0.4")
 
 
     implementation("ch.qos.logback:logback-core:$logbackVersion")
