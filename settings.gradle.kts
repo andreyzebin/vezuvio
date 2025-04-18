@@ -12,20 +12,16 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-
 // use only for home/dev use - e.q.: no enterprise repositories configuration
-dependencyResolutionManagement {
+dependencyResolutionManagement(fun DependencyResolutionManagement.() {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenLocal()
         mavenCentral()
         maven(url = "https://jitpack.io")
         gradlePluginPortal()
-
     }
-}
-
-
+})
 
 rootProject.name = "vezuvio"
 include("app")

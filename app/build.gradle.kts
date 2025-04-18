@@ -22,14 +22,10 @@ var version = "0.0.2"
 dependencies {
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
     // This dependency is used by the application.
     implementation("io.github.andreyzebin:java-bash:0.0.14")
     implementation("io.github.andreyzebin:java-git:0.0.4")
-
-
     implementation("ch.qos.logback:logback-core:$logbackVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.slf4j:slf4j-api:$slf4jVersion")
@@ -40,7 +36,6 @@ dependencies {
 
     testCompileOnly("org.projectlombok:lombok:1.18.36")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
-
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -72,8 +67,6 @@ application {
             "-Dio.github.vezuvio.version=${version}"
         )
     }
-
-
 }
 
 tasks.named<Test>("test") {
