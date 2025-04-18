@@ -586,8 +586,8 @@ vuTest () {
   if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
     echo "Running build with init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
   fi
-
-  eval "$VEZUVIO_HOME/bin/vezuvio"
+  argsV=$(echo "$@")
+  eval "$VEZUVIO_HOME/bin/vezuvio $argsV"
 }
 
 currentDir=$(pwd)
