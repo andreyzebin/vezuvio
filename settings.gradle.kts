@@ -21,5 +21,14 @@ dependencyResolutionManagement {
     }
 }
 
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven("https://jitpack.io")
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "vezuvio"
 include("app")
