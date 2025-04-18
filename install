@@ -582,10 +582,12 @@ then
   echo "${LOCAL_APPS_PATH}/vezuvio"
 fi
 
-vezuvioTest () {
-        # shellcheck disable=SC2139
-        alias vezuvio="$VEZUVIO_HOME/bin/vezuvio"
-        echo "Use alias=$VEZUVIO_HOME/bin/vezuvio"
+vuTest () {
+  if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
+    echo "Running build with init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
+  fi
+
+  eval "$VEZUVIO_HOME/bin/vezuvio"
 }
 
 currentDir=$(pwd)
@@ -638,10 +640,10 @@ currentDir=$(pwd)
       logTitleL1 " - Testing if sources are buildable..."
       execute "${USABLE_GRADLE}" -PisProduction=1 clean build -x test
       logTitleL1 " - Executing: 'vezuvio --version'..."
-      vezuvio --version
+      vuTest --version
     else
       logTitleL1 " - Executing: 'vezuvio --version'..."
-      vezuvioTest --version
+      vuTest --version
     fi
 } || {
     cd "$currentDir"
