@@ -83,10 +83,11 @@ else
       # USE_INTERACTIVE_ELEVATION=1
 
       # shellcheck disable=SC2116
-        # vezuvioHome=$(echo $USABLE_APP_OS_LOCATION/vezuvio)
-        vezuvioHome=$(echo $USABLE_APP_HOME_LOCATION/.vezuvio)
-        export VEZUVIO_HOME=$vezuvioHome
-        export VEZUVIO_HOME_PARENT=$USABLE_APP_OS_LOCATION
+
+      # export VEZUVIO_HOME_PARENT=$USABLE_APP_OS_LOCATION
+      export VEZUVIO_HOME_PARENT=$USABLE_APP_HOME_LOCATION
+      vezuvioHome="$VEZUVIO_HOME_PARENT/.vezuvio"
+      export VEZUVIO_HOME=$vezuvioHome
   else
       echo "You are not an admin:";
       echo " - User level install";
@@ -94,9 +95,9 @@ else
       LOCAL_APPS_PATH=$USABLE_PATHS_HOME_BIN
 
       # shellcheck disable=SC2116
-        vezuvioHome=$(echo $USABLE_APP_HOME_LOCATION/.vezuvio)
-        export VEZUVIO_HOME=$vezuvioHome
-        export VEZUVIO_HOME_PARENT=$USABLE_APP_HOME_LOCATION
+      export VEZUVIO_HOME_PARENT=$USABLE_APP_HOME_LOCATION
+      vezuvioHome="$VEZUVIO_HOME_PARENT/.vezuvio"
+      export VEZUVIO_HOME=$vezuvioHome
   fi
 fi
 
