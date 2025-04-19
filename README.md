@@ -74,11 +74,11 @@ Requirements
 
 ### Install
 ```bash
-curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install | bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install)"
 ```
 also, if you are using gradle 7.x.x
 ```bash
-curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/gradle-7/install | bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/gradle-7/install)"
 ```
 
 Install for CI
