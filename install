@@ -543,7 +543,7 @@ if [ -z "${USE_GRADLE_WRAPPER-}" ]; then
     elif [[ "${USABLE_GRADLE}" != /usr/bin/gradle ]]
     then
       export VEZUVIO_GRADLE_PATH="${USABLE_GRADLE}"
-      logTitleL1 "Found Gradle at ${VEZUVIO_GRADLE_PATH}"
+      logTitleL1 " - Found Gradle at ${VEZUVIO_GRADLE_PATH}"
     fi
   fi
 else
