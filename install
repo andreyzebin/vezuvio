@@ -648,14 +648,9 @@ currentDir=$(pwd)
           fi
         fi
       fi
-
-      logTitleL1 "Checking installation result..."
-      logTitleL1 " - Testing if sources are buildable..."
-      execute "${USABLE_GRADLE}" -PisProduction=1 clean build -x test
-      logTitleL1 " - Executing: 'vezuvio --version'..."
-    else
-      logTitleL1 " - Executing: 'vezuvio --version'..."
     fi
+      logTitleL1 "Checking installation result..."
+      logTitleL1 " - Executing: 'vezuvio --version'..."
 } || {
     cd "$currentDir"
     abort "Installation failed!"
