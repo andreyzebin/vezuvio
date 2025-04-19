@@ -223,7 +223,8 @@ public class App {
                     .forEach((key, value) ->
                             stdOUT.accept(String.format("%s=%s", key, value)));
         } else {
-            throw new IllegalArgumentException("Wrong args: " + Stream.of(args).collect(Collectors.joining(" ")));
+            throw new IllegalArgumentException("Wrong args: " + Stream.of(args)
+                    .map(cArg -> "<" + cArg + ">").collect(Collectors.joining(";")));
         }
     }
 
