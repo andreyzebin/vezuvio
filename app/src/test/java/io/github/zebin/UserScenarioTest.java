@@ -234,7 +234,7 @@ class UserScenarioTest {
                 .toString();
 
         log.info(cmdRender);
-        System.setProperty("logger.root.level", "ERROR");
+        System.setProperty("io.github.vezuvio.logger.root.level", "ERROR");
         System.setProperty("VEZUVIO_resources_path", "../tmp");
         System.setProperty("VEZUVIO_repository_location", "/home/andrey/tmp/mock-repo");
 

@@ -42,9 +42,9 @@ fi
 # Absolute path this script is in, thus /home/user/bin
 # SCRIPTPATH=$(dirname "$SCRIPT")
 
-# shellcheck disable=SC2116
-VEZUVIO_HOME_USER_LEVEL=$(echo ~/.vezuvio)
-VEZUVIO_HOME_WORK_DIR_LEVEL=$(echo .vezuvio)
+
+VEZUVIO_HOME_USER_LEVEL=~/.vezuvio
+VEZUVIO_HOME_WORK_DIR_LEVEL="$(pwd)"/.vezuvio
 VEZUVIO_HOME=$VEZUVIO_HOME_USER_LEVEL
 if [[ -d "${VEZUVIO_HOME_WORK_DIR_LEVEL}" ]]; then
   VEZUVIO_HOME=$VEZUVIO_HOME_WORK_DIR_LEVEL
@@ -66,7 +66,7 @@ vuApp() {
       fi
   fi
 
-  gradle --console=plain app:run -PisProduction=true -PworkingDirectory="${currentDir}" --args="$*"
+  gradle --console=plain app:run -PisProduction=true -PvesuviusHome="${VEZUVIO_HOME}" -PworkingDirectory="${currentDir}" --args="$*"
   cd "${currentDir}" || exit
 }
 
@@ -78,4 +78,3 @@ if [ "$#" -lt 1 ]; then
 fi
 
 vuApp "$@"
-

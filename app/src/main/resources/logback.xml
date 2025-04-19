@@ -41,7 +41,7 @@
   </appender>
 
 
-  <root level="${logger.root.level}">
+  <root level="${io.github.vezuvio.logger.root.level}">
     <appender-ref ref="STDOUT"/>
     <appender-ref ref="bashSTDOUT"/>
   </root>

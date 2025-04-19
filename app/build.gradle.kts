@@ -57,17 +57,19 @@ application {
         var props = Properties()
         props.load(File("../etc/vezuvio.properties").reader())
         applicationDefaultJvmArgs = listOf(
-            "-Dlogger.root.level=${props.getProperty("logger.root.level")}",
+            "-Dio.github.vezuvio.logger.root.level=${props.getProperty("io.github.vezuvio.logger.root.level")}",
             "-Dio.github.vezuvio.workingDirectory=${project.findProperty("workingDirectory")}",
-            "-Dio.github.vezuvio.version=${version}"
+            "-Dio.github.vezuvio.version=${version}",
+            "-Dio.github.vezuvio.home=${project.findProperty("vesuviusHome")}"
         )
     } else {
         var props = Properties()
         props.load(File("etc/vezuvio.properties").reader())
         applicationDefaultJvmArgs = listOf(
-            "-Dlogger.root.level=${props.getProperty("logger.root.level")}",
+            "-Dio.github.vezuvio.logger.root.level=${props.getProperty("io.github.vezuvio.logger.root.level")}",
             "-Dio.github.vezuvio.workingDirectory=..",
-            "-Dio.github.vezuvio.version=${version}"
+            "-Dio.github.vezuvio.version=${version}",
+            "-Dio.github.vezuvio.home=${project.findProperty("vesuviusHome")}"
         )
     }
 }
