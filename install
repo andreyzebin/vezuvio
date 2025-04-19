@@ -573,7 +573,7 @@ fi
 # $ if [ "/c/Users/THINKPAD/.vezuvio" == "$(echo ~/.vezuvio)" ]; then echo "Equal"; else echo "NotEqual";  fi
 # >Equal
 
-logTitleL1 "Your bin paths:"
+logTitleL1 " - Your bin paths:"
 IN="$PATH"
 mails=$(echo "$IN" | tr ":" " ")
 for addr in $mails
