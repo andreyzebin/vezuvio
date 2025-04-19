@@ -454,6 +454,7 @@ EOABORT
 fi
 
 # check_run_command_as_root
+logTitleL1 "Checking requirements:"
 
 if [[ -d "${VEZUVIO_HOME}" && ! -x "${VEZUVIO_HOME}" ]]
 then
