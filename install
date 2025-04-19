@@ -649,14 +649,14 @@ currentDir=$(pwd)
         fi
       fi
     fi
-      logTitleL1 "Checking installation result..."
-      logTitleL1 " - Executing: 'vezuvio --version'..."
 } || {
     cd "$currentDir"
     abort "Installation failed!"
 }
 cd "$currentDir"
 {
+  logTitleL1 "Checking installation result..."
+  logTitleL1 " - Executing: 'vezuvio --version'..."
   vuTest --version
 } || {
     abort "Installation check failed!"
