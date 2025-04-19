@@ -73,17 +73,17 @@ Requirements
 
 ### Install
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install)"
+curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install | /bin/bash -c
 ```
 also, if you are using gradle 7.x.x
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/gradle-7/install)"
+curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/gradle-7/install | /bin/bash -c
 ```
 
 Install for CI
 ```bash
-export IO_GITHUB_VESUVIUS_GRADLE_INIT="$(pwd)/test-environment/init.gradle.kts"
+# Set your enterprise maven/gradle artifactory urls
+export IO_GITHUB_VESUVIUS_GRADLE_INIT="$(pwd)/.vezuvio/repository/test-environment/init.gradle.kts"
 
-CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install)"
-alias vezuvio="$VEZUVIO_HOME/bin/vezuvio"
+CI=1 curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install | /bin/bash -c
 ```
