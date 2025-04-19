@@ -82,8 +82,9 @@ curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/grad
 
 Install for CI
 ```bash
-# Set your enterprise maven/gradle artifactory urls
-export IO_GITHUB_VESUVIUS_GRADLE_INIT="$(pwd)/.vezuvio/repository/test-environment/init.gradle.kts"
-
 CI=1 curl -fsSL https://raw.githubusercontent.com/andreyzebin/vezuvio/refs/heads/master/install | bash
+```
+- Override repositories configuration with your company's artifactory
+```bash
+export IO_GITHUB_VESUVIUS_GRADLE_INIT="$(pwd)/.vezuvio/repository/test-environment/init.gradle.kts"
 ```
