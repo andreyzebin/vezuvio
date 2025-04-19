@@ -34,6 +34,10 @@ public class Configurations {
         return PosixPath.ofPosix("~");
     }
 
+    public PosixPath getLocalDir() {
+        return PosixPath.ofPosix("/opt");
+    }
+
     public PosixPath getVezuvioLocalHome() {
         return getWorkDir().climb(VESUVIO_HOME);
     }
@@ -44,9 +48,9 @@ public class Configurations {
 
     public ConfigTree getConf() {
         return new ConfigTree(new VirtualDirectoryTree(
-                new WorkingDirectory(fm, getUserHomeDir().climb(VESUVIO_HOME_CONF), e -> {
+                new WorkingDirectory(fm, getLocalDir().climb(VESUVIO_HOME_CONF), e -> {
                 }),
-                new WorkingDirectory(fm, getWorkDir().climb(VESUVIO_HOME_CONF), e -> {
+                new WorkingDirectory(fm, getUserHomeDir().climb(VESUVIO_HOME_CONF), e -> {
                 }),
                 new WorkingDirectory(fm, getWorkDir().climb(VESUVIO_HOME_CONF), e -> {
                 })));

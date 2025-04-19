@@ -80,8 +80,8 @@ public class App {
         }
 
         Configurations cnf = new Configurations(wd, terminal, fm.dirExists(wd.climb(".vezuvio")) ?
-                VirtualDirectoryTree.LOCAL :
-                VirtualDirectoryTree.USER);
+                VirtualDirectoryTree.WORKDIR_LEVEL_CONF :
+                VirtualDirectoryTree.USER_LEVEL_CONF);
         new App(System.out::println, System.err::println, cnf).run(args);
     }
 
@@ -113,7 +113,7 @@ public class App {
         } else if (test(args, "leafs", "use", "*")) {
             setConf(LEAFS_CURRENT, args);
         } else if (test(args, "leafs", "drop")) {
-            conf.getConf().deleteProperty(VirtualDirectoryTree.USER, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
+            conf.getConf().deleteProperty(VirtualDirectoryTree.OS_LEVEL_CONF, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
         } else if (test(args, "branches", "list")) {
             withRequestTree(rt -> {
                 rt.listBranches().forEach(stdOUT::accept);

@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class VirtualDirectoryTree implements DirectoryTree {
-    public static final PosixPath RUNTIME = PosixPath.ofPosix("local/runtime");
-    public static final PosixPath LOCAL = PosixPath.ofPosix("local");
+    public static final PosixPath WORKDIR_LEVEL_CONF = PosixPath.ofPosix("user/workdir");
+    public static final PosixPath USER_LEVEL_CONF = PosixPath.ofPosix("user");
     public static final PosixPath RELATIVE_ROOT = PosixPath.ofPosix("");
-    public static final PosixPath USER = RELATIVE_ROOT;
+    public static final PosixPath OS_LEVEL_CONF = RELATIVE_ROOT;
 
     private final Map<PosixPath, DirectoryTree> levels;
 
@@ -24,19 +24,19 @@ public class VirtualDirectoryTree implements DirectoryTree {
      */
     public VirtualDirectoryTree(DirectoryTree user, DirectoryTree local, DirectoryTree runtime) {
         this.levels = Map.of(
-                USER, user,
-                LOCAL, local,
-                RUNTIME, runtime);
+                OS_LEVEL_CONF, user,
+                USER_LEVEL_CONF, local,
+                WORKDIR_LEVEL_CONF, runtime);
     }
 
     @Override
     public Writer put(PosixPath posixPath) {
-        if (posixPath.startsWith(RUNTIME)) {
-            return levels.get(RUNTIME).put(posixPath.relativize(RUNTIME));
-        } else if (posixPath.startsWith(LOCAL)) {
-            return levels.get(LOCAL).put(posixPath.relativize(LOCAL));
-        } else if (posixPath.startsWith(USER)) {
-            return levels.get(USER).put(posixPath.relativize(USER));
+        if (posixPath.startsWith(WORKDIR_LEVEL_CONF)) {
+            return levels.get(WORKDIR_LEVEL_CONF).put(posixPath.relativize(WORKDIR_LEVEL_CONF));
+        } else if (posixPath.startsWith(USER_LEVEL_CONF)) {
+            return levels.get(USER_LEVEL_CONF).put(posixPath.relativize(USER_LEVEL_CONF));
+        } else if (posixPath.startsWith(OS_LEVEL_CONF)) {
+            return levels.get(OS_LEVEL_CONF).put(posixPath.relativize(OS_LEVEL_CONF));
         }
 
         throw new IllegalArgumentException("Wrong path: " + posixPath);
@@ -44,12 +44,12 @@ public class VirtualDirectoryTree implements DirectoryTree {
 
     @Override
     public boolean delete(PosixPath posixPath) {
-        if (posixPath.startsWith(RUNTIME)) {
-            return levels.get(RUNTIME).delete(posixPath.relativize(RUNTIME));
-        } else if (posixPath.startsWith(LOCAL)) {
-            return levels.get(LOCAL).delete(posixPath.relativize(LOCAL));
-        } else if (posixPath.startsWith(USER)) {
-            return levels.get(USER).delete(posixPath.relativize(USER));
+        if (posixPath.startsWith(WORKDIR_LEVEL_CONF)) {
+            return levels.get(WORKDIR_LEVEL_CONF).delete(posixPath.relativize(WORKDIR_LEVEL_CONF));
+        } else if (posixPath.startsWith(USER_LEVEL_CONF)) {
+            return levels.get(USER_LEVEL_CONF).delete(posixPath.relativize(USER_LEVEL_CONF));
+        } else if (posixPath.startsWith(OS_LEVEL_CONF)) {
+            return levels.get(OS_LEVEL_CONF).delete(posixPath.relativize(OS_LEVEL_CONF));
         }
 
         throw new IllegalArgumentException("Wrong path: " + posixPath);
@@ -57,12 +57,12 @@ public class VirtualDirectoryTree implements DirectoryTree {
 
     @Override
     public Writer patch(PosixPath posixPath) {
-        if (posixPath.startsWith(RUNTIME)) {
-            return levels.get(RUNTIME).patch(posixPath.relativize(RUNTIME));
-        } else if (posixPath.startsWith(LOCAL)) {
-            return levels.get(LOCAL).patch(posixPath.relativize(LOCAL));
-        } else if (posixPath.startsWith(USER)) {
-            return levels.get(USER).patch(posixPath.relativize(USER));
+        if (posixPath.startsWith(WORKDIR_LEVEL_CONF)) {
+            return levels.get(WORKDIR_LEVEL_CONF).patch(posixPath.relativize(WORKDIR_LEVEL_CONF));
+        } else if (posixPath.startsWith(USER_LEVEL_CONF)) {
+            return levels.get(USER_LEVEL_CONF).patch(posixPath.relativize(USER_LEVEL_CONF));
+        } else if (posixPath.startsWith(OS_LEVEL_CONF)) {
+            return levels.get(OS_LEVEL_CONF).patch(posixPath.relativize(OS_LEVEL_CONF));
         }
 
         throw new IllegalArgumentException("Wrong path: " + posixPath);
@@ -70,12 +70,12 @@ public class VirtualDirectoryTree implements DirectoryTree {
 
     @Override
     public Reader get(PosixPath posixPath) {
-        if (posixPath.startsWith(RUNTIME)) {
-            return levels.get(RUNTIME).get(posixPath.relativize(RUNTIME));
-        } else if (posixPath.startsWith(LOCAL)) {
-            return levels.get(LOCAL).get(posixPath.relativize(LOCAL));
-        } else if (posixPath.startsWith(USER)) {
-            return levels.get(USER).get(posixPath.relativize(USER));
+        if (posixPath.startsWith(WORKDIR_LEVEL_CONF)) {
+            return levels.get(WORKDIR_LEVEL_CONF).get(posixPath.relativize(WORKDIR_LEVEL_CONF));
+        } else if (posixPath.startsWith(USER_LEVEL_CONF)) {
+            return levels.get(USER_LEVEL_CONF).get(posixPath.relativize(USER_LEVEL_CONF));
+        } else if (posixPath.startsWith(OS_LEVEL_CONF)) {
+            return levels.get(OS_LEVEL_CONF).get(posixPath.relativize(OS_LEVEL_CONF));
         }
 
         throw new IllegalArgumentException("Wrong path: " + posixPath);
@@ -83,12 +83,12 @@ public class VirtualDirectoryTree implements DirectoryTree {
 
     @Override
     public boolean exists(PosixPath posixPath) {
-        if (posixPath.startsWith(RUNTIME)) {
-            return levels.get(RUNTIME).exists(posixPath.relativize(RUNTIME));
-        } else if (posixPath.startsWith(LOCAL)) {
-            return levels.get(LOCAL).exists(posixPath.relativize(LOCAL));
-        } else if (posixPath.startsWith(USER)) {
-            return levels.get(USER).exists(posixPath.relativize(USER));
+        if (posixPath.startsWith(WORKDIR_LEVEL_CONF)) {
+            return levels.get(WORKDIR_LEVEL_CONF).exists(posixPath.relativize(WORKDIR_LEVEL_CONF));
+        } else if (posixPath.startsWith(USER_LEVEL_CONF)) {
+            return levels.get(USER_LEVEL_CONF).exists(posixPath.relativize(USER_LEVEL_CONF));
+        } else if (posixPath.startsWith(OS_LEVEL_CONF)) {
+            return levels.get(OS_LEVEL_CONF).exists(posixPath.relativize(OS_LEVEL_CONF));
         }
 
         throw new IllegalArgumentException("Wrong path: " + posixPath);
@@ -96,12 +96,12 @@ public class VirtualDirectoryTree implements DirectoryTree {
 
     @Override
     public boolean isDir(PosixPath posixPath) {
-        if (posixPath.startsWith(RUNTIME)) {
-            return levels.get(RUNTIME).isDir(posixPath.relativize(RUNTIME));
-        } else if (posixPath.startsWith(LOCAL)) {
-            return levels.get(LOCAL).isDir(posixPath.relativize(LOCAL));
-        } else if (posixPath.startsWith(USER)) {
-            return levels.get(USER).isDir(posixPath.relativize(USER));
+        if (posixPath.startsWith(WORKDIR_LEVEL_CONF)) {
+            return levels.get(WORKDIR_LEVEL_CONF).isDir(posixPath.relativize(WORKDIR_LEVEL_CONF));
+        } else if (posixPath.startsWith(USER_LEVEL_CONF)) {
+            return levels.get(USER_LEVEL_CONF).isDir(posixPath.relativize(USER_LEVEL_CONF));
+        } else if (posixPath.startsWith(OS_LEVEL_CONF)) {
+            return levels.get(OS_LEVEL_CONF).isDir(posixPath.relativize(OS_LEVEL_CONF));
         }
 
         throw new IllegalArgumentException("Wrong path: " + posixPath);
@@ -109,12 +109,12 @@ public class VirtualDirectoryTree implements DirectoryTree {
 
     @Override
     public Stream<PosixPath> list(PosixPath posixPath) {
-        if (posixPath.startsWith(RUNTIME)) {
-            return levels.get(RUNTIME).list(posixPath.relativize(RUNTIME));
-        } else if (posixPath.startsWith(LOCAL)) {
-            return levels.get(LOCAL).list(posixPath.relativize(LOCAL));
-        } else if (posixPath.startsWith(USER)) {
-            return levels.get(USER).list(posixPath.relativize(USER));
+        if (posixPath.startsWith(WORKDIR_LEVEL_CONF)) {
+            return levels.get(WORKDIR_LEVEL_CONF).list(posixPath.relativize(WORKDIR_LEVEL_CONF));
+        } else if (posixPath.startsWith(USER_LEVEL_CONF)) {
+            return levels.get(USER_LEVEL_CONF).list(posixPath.relativize(USER_LEVEL_CONF));
+        } else if (posixPath.startsWith(OS_LEVEL_CONF)) {
+            return levels.get(OS_LEVEL_CONF).list(posixPath.relativize(OS_LEVEL_CONF));
         }
 
         throw new IllegalArgumentException("Wrong path: " + posixPath);
