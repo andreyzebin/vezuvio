@@ -444,9 +444,7 @@ if [[ -n "${USE_INTERACTIVE_ELEVATION-}" ]]
 then
   logTitleL1 'Checking for `sudo` access (may request your password)...'
   [[ "${EUID:-${UID}}" == "0" ]] || have_sudo_access
-elif ! [[ -w "${VEZUVIO_HOME_PARENT}" ]] &&
-     # ! [[ -w "/home" ]] &&
-     ! have_sudo_access
+elif ! [[ -w "${VEZUVIO_HOME_PARENT}" ]] && ! have_sudo_access
 then
   abort "$(
     cat <<EOABORT
@@ -636,14 +634,14 @@ currentDir=$(pwd)
         if [ -f "${LOCAL_APPS_PATH}"/vezuvio ]; then
           if [ ! "$(readlink "${LOCAL_APPS_PATH}"/vezuvio)" == "${VEZUVIO_HOME}"/bin/vezuvio ]; then
             # Overwrite
-            if have_sudo_access; then
+            if ! [[ -w "${LOCAL_APPS_PATH}" ]] && ! have_sudo_access; then
               sudo ln -sf "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
             else
               ln -sf "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
             fi
           fi
         else
-          if have_sudo_access; then
+          if ! [[ -w "${LOCAL_APPS_PATH}" ]] && ! have_sudo_access; then
             sudo ln -s "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
           else
             ln -s "${VEZUVIO_HOME}"/bin/vezuvio "${LOCAL_APPS_PATH}"/vezuvio
