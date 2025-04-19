@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -72,8 +73,7 @@ public class App {
         PosixPath wd;
         if (workingDirOverride != null) {
             log.info("Working directory is set via system property");
-            wd = PosixPath.ofPosix(fixWinPath(workingDirOverride));
-            fm.go(wd);
+            wd = fm.go(PosixPath.ofPosix(fixWinPath(workingDirOverride)));
         } else {
             log.info("Working directory is set from java process");
             wd = fm.getCurrent();
@@ -222,6 +222,8 @@ public class App {
             System.getProperties()
                     .forEach((key, value) ->
                             stdOUT.accept(String.format("%s=%s", key, value)));
+        } else {
+            throw new IllegalArgumentException("Wrong args: " + Stream.of(args).collect(Collectors.joining(" ")));
         }
     }
 
