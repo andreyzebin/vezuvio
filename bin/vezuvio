@@ -54,7 +54,6 @@ vuApp() {
   currentDir=$(pwd)
 
   cd "${VEZUVIO_HOME}"/repository || exit
-  argsV=$(echo "$@")
   includeBuild=""
   if [[ ! -d "app/build" ]]; then
       echo "Running app first time - requires build."
@@ -66,7 +65,11 @@ vuApp() {
         gradle build "${includeBuild}" -x test
       fi
   fi
-  gradle --console=plain app:run -PisProduction=true -PworkingDirectory="${currentDir}" --args=\""$argsV"\"
+  argsV=$(echo "$@")
+  argsP=\""$argsV"\"
+  #echo ap="$argsP"
+  #echo wd="${currentDir}"
+  gradle --console=plain app:run -PisProduction=true -PworkingDirectory="${currentDir}" --args="$argsP"
   cd "${currentDir}" || exit
 }
 

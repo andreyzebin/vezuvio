@@ -9,6 +9,7 @@
 ./gradlew app:run -PisProduction=1 --args='--version'
 ./gradlew app:run -PisProduction=1 --args='--system.properties'
 ./gradlew app:run --args='origins use ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git'
+./gradlew app:run --args='origins which'
 ./gradlew app:run --args='credentials use ssh-agent:~/.ssh/zebin'
 ./gradlew app:run --args='branches list'
 ./gradlew app:run --args='branches use master'

@@ -62,8 +62,10 @@ application {
             "-Dio.github.vezuvio.version=${version}"
         )
     } else {
+        var props = Properties()
+        props.load(File("etc/vezuvio.properties").reader())
         applicationDefaultJvmArgs = listOf(
-            "-Dlogger.root.level=DEBUG",
+            "-Dlogger.root.level=${props.getProperty("logger.root.level")}",
             "-Dio.github.vezuvio.version=${version}"
         )
     }
