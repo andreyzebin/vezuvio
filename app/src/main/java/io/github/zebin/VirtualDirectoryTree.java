@@ -51,7 +51,7 @@ public class VirtualDirectoryTree implements DirectoryTree {
             return levels.get(OS_LEVEL_CONF).delete(posixPath.relativize(OS_LEVEL_CONF));
         }
 
-        throw new IllegalArgumentException("Wrong path: " + posixPath);
+        return false;
     }
 
     @Override
@@ -90,7 +90,7 @@ public class VirtualDirectoryTree implements DirectoryTree {
             return levels.get(OS_LEVEL_CONF).exists(posixPath.relativize(OS_LEVEL_CONF));
         }
 
-        throw new IllegalArgumentException("Wrong path: " + posixPath);
+        return false;
     }
 
     @Override
@@ -103,7 +103,7 @@ public class VirtualDirectoryTree implements DirectoryTree {
             return levels.get(OS_LEVEL_CONF).isDir(posixPath.relativize(OS_LEVEL_CONF));
         }
 
-        throw new IllegalArgumentException("Wrong path: " + posixPath);
+        return false;
     }
 
     @Override
@@ -116,6 +116,6 @@ public class VirtualDirectoryTree implements DirectoryTree {
             return levels.get(OS_LEVEL_CONF).list(posixPath.relativize(OS_LEVEL_CONF));
         }
 
-        throw new IllegalArgumentException("Wrong path: " + posixPath);
+        return Stream.of();
     }
 }

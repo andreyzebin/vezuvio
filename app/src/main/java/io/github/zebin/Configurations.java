@@ -53,7 +53,8 @@ public class Configurations {
                 new WorkingDirectory(fm, getUserHomeDir().climb(VESUVIO_HOME_CONF), e -> {
                 }),
                 new WorkingDirectory(fm, getWorkDir().climb(VESUVIO_HOME_CONF), e -> {
-                })));
+                })
+        ));
     }
 
     public TextTerminal getTerm() {
