@@ -576,12 +576,21 @@ fi
 logTitleL1 " - Your bin paths:"
 IN="$PATH"
 mails=$(echo "$IN" | tr ":" " ")
+
+isPathContainsLocalApps="false"
 for addr in $mails
 do
     if [[ $addr == */bin* ]]; then
       echo -"[$addr]"
+      if [[ $addr == "$LOCAL_APPS_PATH" ]]; then
+        isPathContainsLocalApps="true"
+      fi
     fi
 done
+
+if [[ "$isPathContainsLocalApps" == "false" ]]; then
+  warn "Path has no ${LOCAL_APPS_PATH}"
+fi
 
 logTitleL1 " - This script will install:"
 echo "${VEZUVIO_HOME}/*"
