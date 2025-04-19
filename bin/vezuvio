@@ -65,11 +65,8 @@ vuApp() {
         gradle build "${includeBuild}" -x test
       fi
   fi
-  argsV=$(echo "$@")
-  argsP=\""$argsV"\"
-  #echo ap="$argsP"
-  #echo wd="${currentDir}"
-  gradle --console=plain app:run -PisProduction=true -PworkingDirectory="${currentDir}" --args="$argsP"
+
+  gradle --console=plain app:run -PisProduction=true -PworkingDirectory="${currentDir}" --args="$*"
   cd "${currentDir}" || exit
 }
 
