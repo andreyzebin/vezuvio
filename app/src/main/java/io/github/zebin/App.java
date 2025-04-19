@@ -79,9 +79,14 @@ public class App {
             wd = fm.getCurrent();
         }
 
-        Configurations cnf = new Configurations(wd, terminal, fm.dirExists(wd.climb(".vezuvio")) ?
+        boolean workDirConfExist = fm.dirExists(wd.climb(".vezuvio"));
+        Configurations cnf = new Configurations(wd, terminal, workDirConfExist ?
                 VirtualDirectoryTree.WORKDIR_LEVEL_CONF :
                 VirtualDirectoryTree.USER_LEVEL_CONF);
+
+        if (workDirConfExist) {
+            log.info("Configuration top is {}", cnf.getConfLevel());
+        }
         new App(System.out::println, System.err::println, cnf).run(args);
     }
 
