@@ -118,7 +118,7 @@ public class App {
         } else if (test(args, "leafs", "use", "*")) {
             setConf(LEAFS_CURRENT, args);
         } else if (test(args, "leafs", "drop")) {
-            conf.getConf().deleteProperty(VirtualDirectoryTree.OS_LEVEL_CONF, IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
+            conf.getConf().deleteProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
         } else if (test(args, "branches", "list")) {
             withRequestTree(rt -> {
                 rt.listBranches().forEach(stdOUT::accept);

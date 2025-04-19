@@ -11,8 +11,7 @@ import java.util.stream.Stream;
 public class VirtualDirectoryTree implements DirectoryTree {
     public static final PosixPath WORKDIR_LEVEL_CONF = PosixPath.ofPosix("os/user/workdir");
     public static final PosixPath USER_LEVEL_CONF = PosixPath.ofPosix("os/user");
-    public static final PosixPath RELATIVE_ROOT = PosixPath.ofPosix("os");
-    public static final PosixPath OS_LEVEL_CONF = RELATIVE_ROOT;
+    public static final PosixPath OS_LEVEL_CONF = PosixPath.ofPosix("os");
 
     private final Map<PosixPath, DirectoryTree> levels;
 
