@@ -62,7 +62,7 @@ if [[ -n "${CI-}" ]]
 then
   echo "Running in CI:";
   echo " - Working directory level install";
-  echo " - Using gradle wrapper";
+  echo " - Using gradle local";
   echo "Working directory is $(pwd)";
 
   # shellcheck disable=SC2116
@@ -74,14 +74,17 @@ then
 else
   if [ -x /usr/bin/sudo ]; then
       echo "You are an admin:";
-      echo " - OS level install";
+      # echo " - OS level install";
+      echo " - User level install";
       echo " - Using gradle wrapper";
       USE_GRADLE_WRAPPER=1
-      LOCAL_APPS_PATH=$USABLE_PATHS_LOCAL_BIN
-      USE_INTERACTIVE_ELEVATION=1
+      # LOCAL_APPS_PATH=$USABLE_PATHS_LOCAL_BIN
+      LOCAL_APPS_PATH=$USABLE_PATHS_HOME_BIN
+      USE_INTERACTIVE_ELEVATION=0
 
       # shellcheck disable=SC2116
-        vezuvioHome=$(echo $USABLE_APP_OS_LOCATION/vezuvio)
+        # vezuvioHome=$(echo $USABLE_APP_OS_LOCATION/vezuvio)
+        vezuvioHome=$(echo $USABLE_APP_HOME_LOCATION/.vezuvio)
         export VEZUVIO_HOME=$vezuvioHome
         export VEZUVIO_HOME_PARENT=$USABLE_APP_OS_LOCATION
   else
