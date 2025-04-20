@@ -667,7 +667,9 @@ cd "$currentDir"
 {
   logTitleL1 "Checking installation result..."
   logTitleL1 " - Executing: 'vezuvio --version'..."
-  vuTest --version
+  vuTest --version 1>stdout.tmp;
+  logTitleL1 " - Executing: 'vezuvio --version'...$(cat stdout.tmp)"
+  rm stdout.tmp
 } || {
     abort "Installation check failed!"
 }
