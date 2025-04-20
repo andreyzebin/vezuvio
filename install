@@ -96,14 +96,13 @@ warn() {
 if [[ "${OS-}" == "Windows_NT" ]]; then
   USE_SOFT_LINK_EMULATION=1
 fi
-logTitleL1 "Checking installation result..."
-logTitleL1 " - Executing: 'vezuvio --version'..."
+logTitleL1 "Guessing install type..."
 
 if [[ -n "${CI-}" ]]
 then
   echo "Running in CI:";
-  echo " - Working directory level install";
-  echo " - Using gradle local";
+  logTitleL1 " - Working directory level install";
+  logTitleL1 " - Using gradle local";
   echo "Working directory is $(pwd)";
 
   # shellcheck disable=SC2116
@@ -119,8 +118,8 @@ else
   if [ -x /usr/bin/sudo ]; then
       echo "You are an admin:";
       # echo " - OS level install";
-      echo " - User level install";
-      echo " - Using gradle wrapper";
+      logTitleL1 " - User level install";
+      logTitleL1 " - Using gradle wrapper";
       USE_GRADLE_WRAPPER=1
       # LOCAL_APPS_PATH=$USABLE_PATHS_LOCAL_BIN
       LOCAL_APPS_PATH=$USABLE_PATHS_HOME_BIN
@@ -137,8 +136,8 @@ else
       export VEZUVIO_HOME_PARENT
   else
       echo "You are not an admin:";
-      echo " - User level install";
-      echo " - Using gradle local";
+      logTitleL1 " - User level install";
+      logTitleL1 " - Using gradle local";
       LOCAL_APPS_PATH=$USABLE_PATHS_HOME_BIN
 
       # shellcheck disable=SC2116
