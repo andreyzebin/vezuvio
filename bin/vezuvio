@@ -50,22 +50,23 @@ if [[ -d "${VEZUVIO_HOME_WORK_DIR_LEVEL}" ]]; then
   VEZUVIO_HOME=$VEZUVIO_HOME_WORK_DIR_LEVEL
 fi
 
+debug() { printf "%s\n" "$*" >&2; }
 vuApp() {
   currentDir=$(pwd)
 
   cd "${VEZUVIO_HOME}"/repository || exit
   includeBuild=""
   if [[ ! -d "app/build" ]]; then
-      echo "Running app first time. Requires build."
-      echo "Current dir: $currentDir"
-      echo "Home dir: ${VEZUVIO_HOME}"
-      echo "Running build..."
+      debug "Running app first time. Requires build."
+      debug "Current dir: $currentDir"
+      debug "Home dir: ${VEZUVIO_HOME}"
+      debug "Running build..."
       if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
         includeBuild="--init-script=$IO_GITHUB_VESUVIUS_GRADLE_INIT"
-        echo "Using init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
+        debug "Using init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
       fi
-      eval "gradle build ${includeBuild} -PvesuviusHome=${VEZUVIO_HOME} -x test"
-      echo "Running build...Finished!"
+      eval "gradle --console=plain build ${includeBuild} -PvesuviusHome=${VEZUVIO_HOME} -x test">&2
+      debug "Running build...Finished!"
   fi
 
   gradle --console=plain app:run -PisProduction=true -PvesuviusHome="${VEZUVIO_HOME}" -PworkingDirectory="${currentDir}" --args="$*"
