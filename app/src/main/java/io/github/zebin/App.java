@@ -222,6 +222,7 @@ public class App {
         } else if (test(args, "--version")) {
             stdOUT.accept(System.getProperty(IO_GITHUB_VEZUVIO + ".version"));
         } else if (test(args, "--help")) {
+            stdOUT.accept("Missing arguments!");
             stdOUT.accept("USAGE: [--question] OR ( [vezuvio] [collection] ( [item_id] OR nothing ) [method] )\n");
         } else if (test(args, "--system.properties")) {
             System.getProperties()
