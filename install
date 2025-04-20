@@ -96,7 +96,7 @@ warn() {
 if [[ "${OS-}" == "Windows_NT" ]]; then
   USE_SOFT_LINK_EMULATION=1
 fi
-logTitleL1 "Guessing install features..."
+logTitleL1 "Piking up a somewhat fits you best..."
 
 if [[ -n "${CI-}" ]]
 then
