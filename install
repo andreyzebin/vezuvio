@@ -50,13 +50,54 @@ USABLE_PATHS_LOCAL_BIN="/usr/local/bin"
 USABLE_PATHS_HOME_BIN=$(echo ~/bin)
 LOCAL_APPS_PATH=$USABLE_PATHS_LOCAL_BIN
 
-export USABLE_APP_OS_LOCATION=$(echo /opt)
-export USABLE_APP_HOME_LOCATION=$(echo ~)
+USABLE_APP_OS_LOCATION=$(echo /opt)
+USABLE_APP_HOME_LOCATION=$(echo ~)
+export USABLE_APP_OS_LOCATION
+export USABLE_APP_HOME_LOCATION
+
+# string formatters
+if [[ -t 1 ]]
+then
+  tty_escape() { printf "\033[%sm" "$1"; }
+else
+  tty_escape() { :; }
+fi
+tty_mkbold() { tty_escape "1;$1"; }
+tty_underline="$(tty_escape "4;39")"
+tty_blue="$(tty_mkbold 34)"
+tty_red="$(tty_mkbold 31)"
+tty_bold="$(tty_mkbold 39)"
+tty_reset="$(tty_escape 0)"
+
+shell_join() {
+  local arg
+  printf "%s" "$1"
+  shift
+  for arg in "$@"
+  do
+    printf " "
+    printf "%s" "${arg// /\ }"
+  done
+}
+
+chomp() {
+  printf "%s" "${1/"$'\n'"/}"
+}
+
+logTitleL1() {
+  printf "${tty_blue}==>${tty_bold} %s${tty_reset}\n" "$(shell_join "$@")"
+}
+
+warn() {
+  printf "${tty_red}Warning${tty_reset}: %s\n" "$(chomp "$1")" >&2
+}
 
 # OS=Windows_NT
 if [[ "${OS-}" == "Windows_NT" ]]; then
   USE_SOFT_LINK_EMULATION=1
 fi
+logTitleL1 "Checking installation result..."
+logTitleL1 " - Executing: 'vezuvio --version'..."
 
 if [[ -n "${CI-}" ]]
 then
@@ -67,8 +108,11 @@ then
 
   # shellcheck disable=SC2116
   vezuvioHome=$(echo "$(pwd)"/.vezuvio)
-  export VEZUVIO_HOME=$vezuvioHome
-  export VEZUVIO_HOME_PARENT=$(echo "$(pwd)")
+  VEZUVIO_HOME=$vezuvioHome
+  VEZUVIO_HOME_PARENT=$(echo "$(pwd)")
+
+  export VEZUVIO_HOME
+  export VEZUVIO_HOME_PARENT
   echo "In order to run - use: $VEZUVIO_HOME/bin/vezuvio, ";
   echo "  or, while in current directory, just: ./.vezuvio/bin/vezuvio";
 else
@@ -85,9 +129,12 @@ else
       # shellcheck disable=SC2116
 
       # export VEZUVIO_HOME_PARENT=$USABLE_APP_OS_LOCATION
-      export VEZUVIO_HOME_PARENT=$USABLE_APP_HOME_LOCATION
+      VEZUVIO_HOME_PARENT=$USABLE_APP_HOME_LOCATION
       vezuvioHome="$VEZUVIO_HOME_PARENT/.vezuvio"
-      export VEZUVIO_HOME=$vezuvioHome
+      VEZUVIO_HOME=$vezuvioHome
+
+      export VEZUVIO_HOME
+      export VEZUVIO_HOME_PARENT
   else
       echo "You are not an admin:";
       echo " - User level install";
@@ -95,9 +142,12 @@ else
       LOCAL_APPS_PATH=$USABLE_PATHS_HOME_BIN
 
       # shellcheck disable=SC2116
-      export VEZUVIO_HOME_PARENT=$USABLE_APP_HOME_LOCATION
+      VEZUVIO_HOME_PARENT=$USABLE_APP_HOME_LOCATION
       vezuvioHome="$VEZUVIO_HOME_PARENT/.vezuvio"
-      export VEZUVIO_HOME=$vezuvioHome
+      VEZUVIO_HOME=$vezuvioHome
+
+      export VEZUVIO_HOME
+      export VEZUVIO_HOME_PARENT
   fi
 fi
 
@@ -143,42 +193,7 @@ then
   abort 'Bash must not run in POSIX mode. Please unset POSIXLY_CORRECT and try again.'
 fi
 
-# string formatters
-if [[ -t 1 ]]
-then
-  tty_escape() { printf "\033[%sm" "$1"; }
-else
-  tty_escape() { :; }
-fi
-tty_mkbold() { tty_escape "1;$1"; }
-tty_underline="$(tty_escape "4;39")"
-tty_blue="$(tty_mkbold 34)"
-tty_red="$(tty_mkbold 31)"
-tty_bold="$(tty_mkbold 39)"
-tty_reset="$(tty_escape 0)"
 
-shell_join() {
-  local arg
-  printf "%s" "$1"
-  shift
-  for arg in "$@"
-  do
-    printf " "
-    printf "%s" "${arg// /\ }"
-  done
-}
-
-chomp() {
-  printf "%s" "${1/"$'\n'"/}"
-}
-
-logTitleL1() {
-  printf "${tty_blue}==>${tty_bold} %s${tty_reset}\n" "$(shell_join "$@")"
-}
-
-warn() {
-  printf "${tty_red}Warning${tty_reset}: %s\n" "$(chomp "$1")" >&2
-}
 
 usage() {
   cat <<EOS
@@ -508,7 +523,8 @@ then
   fi
   if [[ "${USABLE_GIT}" != /usr/bin/git ]]
   then
-    export VEZUVIO_GIT_PATH="${USABLE_GIT}"
+    VEZUVIO_GIT_PATH="${USABLE_GIT}"
+    export VEZUVIO_GIT_PATH
     logTitleL1 "Found Git: ${VEZUVIO_GIT_PATH}"
   fi
 fi
@@ -524,7 +540,8 @@ then
     abort "The version of cURL that was found does not satisfy requirements for Vesuvius."
   elif [[ "${USABLE_CURL}" != /usr/bin/curl ]]
   then
-    export VEZUVIO_CURL_PATH="${USABLE_CURL}"
+    VEZUVIO_CURL_PATH="${USABLE_CURL}"
+    export VEZUVIO_CURL_PATH
     logTitleL1 "Found cURL: ${VEZUVIO_CURL_PATH}"
   fi
 fi
@@ -542,7 +559,8 @@ if [ -z "${USE_GRADLE_WRAPPER-}" ]; then
       abort "The version of Gradle that was found does not satisfy requirements for Vesuvius."
     elif [[ "${USABLE_GRADLE}" != /usr/bin/gradle ]]
     then
-      export VEZUVIO_GRADLE_PATH="${USABLE_GRADLE}"
+      VEZUVIO_GRADLE_PATH="${USABLE_GRADLE}"
+      export VEZUVIO_GRADLE_PATH
       logTitleL1 " - Found Gradle at ${VEZUVIO_GRADLE_PATH}"
     fi
   fi
