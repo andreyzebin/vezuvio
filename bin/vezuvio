@@ -64,7 +64,7 @@ vuApp() {
         includeBuild="--init-script=$IO_GITHUB_VESUVIUS_GRADLE_INIT"
         echo "Using init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
       fi
-      gradle build "${includeBuild}" -x test -PvesuviusHome="${VEZUVIO_HOME}"
+      gradle -PvesuviusHome="${VEZUVIO_HOME}" build "${includeBuild}" -x test
       echo "Running build...Finished!"
   fi
 
