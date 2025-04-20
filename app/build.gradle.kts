@@ -52,7 +52,7 @@ java {
 application {
     // Define the main class for the application.
     mainClass = "io.github.zebin.App"
-    val home = project.findProperty("vesuviusHome")
+    var home = project.findProperty("vesuviusHome")
     if ("true" == project.findProperty("isProduction")) {
         // Configure via properties file
         val props = Properties()
@@ -65,7 +65,10 @@ application {
         )
     } else {
         val props = Properties()
-        props.load(File("$home/etc/vezuvio.properties").reader())
+        if (home == null) {
+            home = "..";
+        }
+        props.load(File("etc/vezuvio.properties").reader())
         applicationDefaultJvmArgs = listOf(
             "-Dio.github.vezuvio.logger.root.level=${props.getProperty("io.github.vezuvio.logger.root.level")}",
             "-Dio.github.vezuvio.workingDirectory=..",

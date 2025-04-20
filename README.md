@@ -22,6 +22,7 @@
 ./gradlew app:run --args='list properties'
 ./gradlew app:run --args='set io.github.gitOps.location babara/kad/abara'
 ./gradlew app:run --args='get io.github.gitOps.location'
+./gradlew app:run --args='--help'
 ```
 
 Executor APIs

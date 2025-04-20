@@ -222,16 +222,28 @@ public class App {
         } else if (test(args, "--version")) {
             stdOUT.accept(System.getProperty(IO_GITHUB_VEZUVIO + ".version"));
         } else if (test(args, "--help")) {
-            stdOUT.accept("Missing arguments!");
-            stdOUT.accept("USAGE: [--question] OR ( [vezuvio] [collection] ( [item_id] OR nothing ) [method] )\n");
+            printHelp();
         } else if (test(args, "--system.properties")) {
             System.getProperties()
                     .forEach((key, value) ->
                             stdOUT.accept(String.format("%s=%s", key, value)));
         } else {
-            throw new IllegalArgumentException("Wrong args: " + Stream.of(args)
-                    .map(cArg -> "<" + cArg + ">").collect(Collectors.joining(";")));
+            try {
+                throw new IllegalArgumentException("Wrong args: " + Stream.of(args)
+                        .map(cArg -> "<" + cArg + ">").collect(Collectors.joining(";")));
+            } catch (RuntimeException e) {
+                stdOUT.accept("Wrong arguments!");
+                printHelp();
+
+                throw e;
+            }
         }
+    }
+
+    private void printHelp() {
+        stdOUT.accept("USAGE: vezuvio [--question]");
+        stdOUT.accept("       OR");
+        stdOUT.accept("       vezuvio [collection] ([item_id] OR nothing) [method] ([data] OR nothing)");
     }
 
     private void setConf(String originsCurrent, String[] args) {
