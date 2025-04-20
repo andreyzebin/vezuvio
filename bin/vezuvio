@@ -56,14 +56,16 @@ vuApp() {
   cd "${VEZUVIO_HOME}"/repository || exit
   includeBuild=""
   if [[ ! -d "app/build" ]]; then
-      echo "Running app first time - requires build."
+      echo "Running app first time. Requires build."
       echo "Current dir: $currentDir"
       echo "Home dir: ${VEZUVIO_HOME}"
+      echo "Running build..."
       if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
         includeBuild="--init-script=$IO_GITHUB_VESUVIUS_GRADLE_INIT"
         echo "Using init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
-        gradle build "${includeBuild}" -x test
       fi
+      gradle build "${includeBuild}" -x test
+      echo "Running build...Finished!"
   fi
 
   gradle --console=plain app:run -PisProduction=true -PvesuviusHome="${VEZUVIO_HOME}" -PworkingDirectory="${currentDir}" --args="$*"
