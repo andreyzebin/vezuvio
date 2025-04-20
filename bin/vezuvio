@@ -64,7 +64,7 @@ vuApp() {
         includeBuild="--init-script=$IO_GITHUB_VESUVIUS_GRADLE_INIT"
         echo "Using init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
       fi
-      gradle -PvesuviusHome="${VEZUVIO_HOME}" build "${includeBuild}" -x test
+      eval "gradle build ${includeBuild} -x test"
       echo "Running build...Finished!"
   fi
 
@@ -74,8 +74,7 @@ vuApp() {
 
 # Check the number of arguments
 if [ "$#" -lt 1 ]; then
-    echo "Missing arguments"
-    echo "Usage: vezuvio <arg1> <arg2>"
+    vuApp "--help"
     exit 1
 fi
 
