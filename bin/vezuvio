@@ -69,7 +69,7 @@ vuApp() {
       debug "Running build...Finished!"
   fi
 
-  gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome="${VEZUVIO_HOME}" -PworkingDirectory="${currentDir}" --args="$*"
+  eval "gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome=${VEZUVIO_HOME} -PworkingDirectory=${currentDir} --args=$*"
   cd "${currentDir}" || exit
 }
 
