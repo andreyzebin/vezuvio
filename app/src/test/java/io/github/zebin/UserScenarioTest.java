@@ -98,14 +98,15 @@ class UserScenarioTest {
         runApp("changes explode");
 
         runApp("branches use request-001");
-        runApp("changes copy request-001___r2");
-        runApp("branches use request-001___r2");
+        runApp("changes copy request-001.r2");
+        runApp("branches use request-001.r2");
 
-        runApp("changes rebase master r2");
-        runApp("changes use base r2");
+        runApp("changes rebase r2");
+        Assertions.assertEquals("r2", runApp("changes which base"));
+
         runApp("changes explode");
         runApp("changes merge");
-        runApp("changes explode");
+        Assertions.assertEquals("", runApp("changes explode"));
 
         runApp("changes explode master");
         runApp("changes list master");

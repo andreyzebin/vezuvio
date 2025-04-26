@@ -210,7 +210,8 @@ public class App {
             changesExplodeAPI(cBranch, baseBranch);
         } else if (test(args, "changes", "use", "base", "*")) {
             setConf(CHANGES_BASE, args[3]);
-
+        } else if (test(args, "changes", "which", "base")) {
+            stdOUT.accept(getConf(CHANGES_BASE));
         } else if (test(args, "changes", "explode", "*")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
@@ -237,6 +238,12 @@ public class App {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> rt.getBranch(cBranch).rebase(args[2], args[3]));
+        } else if (test(args, "changes", "rebase", "*")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+            String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
+
+            withRequestTree(rt -> rt.getBranch(cBranch).rebase(baseBranch, args[2]));
+            setConf(CHANGES_BASE, args[2]);
         } else if (test(args, "changes", "copy", "*")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
