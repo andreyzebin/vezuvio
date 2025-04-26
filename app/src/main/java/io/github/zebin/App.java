@@ -35,6 +35,7 @@ public class App {
     public static final String ORIGINS_CURRENT = "origins.current";
     public static final String CREDENTIALS_CURRENT = "credentials.current";
     public static final String BRANCHES_CURRENT = "branches.current";
+    public static final String CHANGES_BASE = "changes.base";
     public static final String LEAFS_CURRENT = "leafs.current";
     private FileManager fm;
     private final Consumer<String> stdOUT;
@@ -105,13 +106,13 @@ public class App {
         String os = terminal.eval("echo $(uname)");
 
         if (test(args, "origins", "use", "*")) {
-            setConf(ORIGINS_CURRENT, args);
+            setConf(ORIGINS_CURRENT, args[2]);
         } else if (test(args, "credentials", "use", "*")) {
-            setConf(CREDENTIALS_CURRENT, args);
+            setConf(CREDENTIALS_CURRENT, args[2]);
         } else if (test(args, "branches", "use", "*")) {
-            setConf(BRANCHES_CURRENT, args);
+            setConf(BRANCHES_CURRENT, args[2]);
         } else if (test(args, "leafs", "use", "*")) {
-            setConf(LEAFS_CURRENT, args);
+            setConf(LEAFS_CURRENT, args[2]);
         } else if (test(args, "leafs", "drop")) {
             conf.getConf().deleteProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
         } else if (test(args, "branches", "list")) {
@@ -204,76 +205,34 @@ public class App {
     private void changesAPI(String[] args) {
         if (test(args, "changes", "explode")) {
             String cBranch = getConf(BRANCHES_CURRENT);
+            String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
-            withRequestTree(rt -> {
-                ConfigVersions cBr = rt.getBranch(cBranch);
-                cBr.getExplodedChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
-                        .entrySet()
-                        .stream()
-                        .map(ce -> String.format("%s %s: %s -> %s",
-                                ce.getKey().getKey(),
-                                ce.getKey().getValue(),
-                                ce.getValue().getBefore(),
-                                ce.getValue().getAfter()))
-                        .forEach(stdOUT);
-            });
+            changesExplodeAPI(cBranch, baseBranch);
+        } else if (test(args, "changes", "use", "base", "*")) {
+            setConf(CHANGES_BASE, args[3]);
+
         } else if (test(args, "changes", "explode", "*")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
-            withRequestTree(rt -> {
-                ConfigVersions cBr = rt.getBranch(cBranch);
-                cBr.getExplodedChanges(cBr.getOffset(args[2]), cBr.topVersion().get().getVersionHash())
-                        .entrySet()
-                        .stream()
-                        .map(ce -> String.format("%s %s: %s -> %s",
-                                ce.getKey().getKey(),
-                                ce.getKey().getValue(),
-                                ce.getValue().getBefore(),
-                                ce.getValue().getAfter()))
-                        .forEach(stdOUT);
-            });
+            changesExplodeAPI(cBranch, args[2]);
         } else if (test(args, "changes", "list")) {
             String cBranch = getConf(BRANCHES_CURRENT);
+            String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
-            withRequestTree(rt -> {
-                ConfigVersions cBr = rt.getBranch(cBranch);
-                cBr.getChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
-                        .entrySet()
-                        .stream()
-                        .map(ce -> String.format("%s %s: %s -> %s",
-                                ce.getKey().getKey(),
-                                ce.getKey().getValue(),
-                                ce.getValue().getBefore(),
-                                ce.getValue().getAfter()))
-                        .forEach(stdOUT);
-            });
+            changesListAPI(cBranch, baseBranch);
         } else if (test(args, "changes", "list", "*")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
-            withRequestTree(rt -> {
-                ConfigVersions cBr = rt.getBranch(cBranch);
-                cBr.getChanges(cBr.getOffset(args[2]), cBr.topVersion().get().getVersionHash())
-                        .entrySet()
-                        .stream()
-                        .map(ce -> String.format("%s %s: %s -> %s",
-                                ce.getKey().getKey(),
-                                ce.getKey().getValue(),
-                                ce.getValue().getBefore(),
-                                ce.getValue().getAfter()))
-                        .forEach(stdOUT);
-            });
+            changesListAPI(cBranch, args[2]);
         } else if (test(args, "changes", "merge", "*")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> rt.getBranch(cBranch).merge(args[2]));
         } else if (test(args, "changes", "merge")) {
             String cBranch = getConf(BRANCHES_CURRENT);
+            String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
-            withRequestTree(rt -> {
-                ConfigVersions cBr = rt.getBranch(cBranch);
-                rt.getTrunk().update();
-                rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
-            });
+            withRequestTree(rt -> rt.getBranch(cBranch).merge(baseBranch));
         } else if (test(args, "changes", "rebase", "*", "*")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
@@ -285,6 +244,36 @@ public class App {
         } else {
             wrongArgs(args);
         }
+    }
+
+    private void changesExplodeAPI(String cBranch, String base) {
+        withRequestTree(rt -> {
+            ConfigVersions cBr = rt.getBranch(cBranch);
+            cBr.getExplodedChanges(cBr.getOffset(base), cBr.topVersion().get().getVersionHash())
+                    .entrySet()
+                    .stream()
+                    .map(ce -> String.format("%s %s: %s -> %s",
+                            ce.getKey().getKey(),
+                            ce.getKey().getValue(),
+                            ce.getValue().getBefore(),
+                            ce.getValue().getAfter()))
+                    .forEach(stdOUT);
+        });
+    }
+
+    private void changesListAPI(String cBranch, String base) {
+        withRequestTree(rt -> {
+            ConfigVersions cBr = rt.getBranch(cBranch);
+            cBr.getChanges(cBr.getOffset(base), cBr.topVersion().get().getVersionHash())
+                    .entrySet()
+                    .stream()
+                    .map(ce -> String.format("%s %s: %s -> %s",
+                            ce.getKey().getKey(),
+                            ce.getKey().getValue(),
+                            ce.getValue().getBefore(),
+                            ce.getValue().getAfter()))
+                    .forEach(stdOUT);
+        });
     }
 
     private void wrongArgs(String[] args) {
@@ -305,8 +294,8 @@ public class App {
         stdOUT.accept("       vezuvio [collection] ([item_id] OR nothing) [method] ([data] OR nothing)");
     }
 
-    private void setConf(String originsCurrent, String[] args) {
-        conf.getConf().setProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + originsCurrent, args[2]);
+    private void setConf(String originsCurrent, String value) {
+        conf.getConf().setProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + originsCurrent, value);
     }
 
     private String getConf(String prop) {

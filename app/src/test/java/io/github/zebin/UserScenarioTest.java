@@ -88,24 +88,25 @@ class UserScenarioTest {
 
         runApp("branches use master");
         runApp("leafs use foo/application1");
+        runApp("changes use base master");
         runApp("changes copy r2");
         runApp("branches use r2");
-        runApp("changes explode master");
+        runApp("changes explode");
         String loc = UUID.randomUUID().toString().substring(1, 5);
         String myPropName = "io.github.vu.myRandomProperty";
         runApp(String.format("properties " + myPropName + " set %s", loc));
-        runApp("changes explode master");
+        runApp("changes explode");
 
         runApp("branches use request-001");
         runApp("changes copy request-001___r2");
-
         runApp("branches use request-001___r2");
 
         runApp("changes rebase master r2");
-        runApp("changes explode r2");
-        runApp("changes merge r2");
+        runApp("changes use base r2");
+        runApp("changes explode");
+        runApp("changes merge");
+        runApp("changes explode");
 
-        runApp("changes explode r2");
         runApp("changes explode master");
         runApp("changes list master");
 
