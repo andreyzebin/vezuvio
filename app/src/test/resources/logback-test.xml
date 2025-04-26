@@ -41,7 +41,7 @@
   </appender>
 
 
-  <root level="info">
+  <root level="debug">
     <appender-ref ref="STDOUT"/>
     <appender-ref ref="bashSTDOUT"/>
   </root>

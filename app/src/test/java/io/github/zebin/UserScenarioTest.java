@@ -178,7 +178,8 @@ class UserScenarioTest {
     @Test
     public void testPropertiesAPI_delete() {
         setupOrigin();
-
+        runApp("branches use master");
+        runApp("leafs use foo/bar");
 
         runApp("properties prop1 set " + "def");
         runApp("properties prop2 set " + "def");
