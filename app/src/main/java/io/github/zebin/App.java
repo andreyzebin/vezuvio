@@ -22,10 +22,7 @@ import io.github.zebin.javabash.sandbox.WorkingDirectory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -122,13 +119,91 @@ public class App {
                 rt.listBranches().forEach(stdOUT::accept);
             });
         } else if (test(args, "leafs", "list")) {
-            String cBranch = getCOnf(BRANCHES_CURRENT);
+            String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 rt.getBranch(cBranch).getLeafs().map(PosixPath::toString).forEach(stdOUT);
             });
-        } else if (test(args, "changes", "explode")) {
-            String cBranch = getCOnf(BRANCHES_CURRENT);
+        } else if (startsWith(args, "changes")) {
+            changesAPI(args);
+        } else if (test(args, "branches", "which")) {
+            stdOUT.accept(getConf(BRANCHES_CURRENT));
+        } else if (test(args, "leafs", "which")) {
+            stdOUT.accept(getConf(LEAFS_CURRENT));
+        } else if (test(args, "credentials", "which")) {
+            stdOUT.accept(getConf(CREDENTIALS_CURRENT));
+        } else if (test(args, "origins", "which")) {
+            stdOUT.accept(getConf(ORIGINS_CURRENT));
+        } else if (startsWith(args, "properties")) {
+            propertiesAPI(args);
+        } else if (test(args, "--version")) {
+            stdOUT.accept(System.getProperty(IO_GITHUB_VEZUVIO + ".version"));
+        } else if (test(args, "--help")) {
+            printHelp();
+        } else if (test(args, "--system.properties")) {
+            System.getProperties()
+                    .forEach((key, value) ->
+                            stdOUT.accept(String.format("%s=%s", key, value)));
+        } else {
+            wrongArgs(args);
+        }
+    }
+
+    private void propertiesAPI(String[] args) {
+        if (test(args, "properties", "list", "--format=lSPkEQv") ||
+                test(args, "properties", "list")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                        ConfigVersions branch = rt.getBranch(cBranch);
+                        branch.getProperties(branch.topVersion().get().getVersionHash())
+                                .forEach((k, v) -> stdOUT.accept(k.getKey() + " " + k.getValue() + "=" + v));
+                    }
+            );
+        } else if (test(args, "properties", "explode", "--format=lSPkEQv") ||
+                test(args, "properties", "explode")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                ConfigVersions branch = rt.getBranch(cBranch);
+                branch.getExplodedState(branch.topVersion().get().getVersionHash())
+                        .forEach((key, value) -> stdOUT.accept(key.getKey() + " " + key.getValue() + "=" + value));
+            });
+        } else if (test(args, "properties", "*", "get")) {
+            String cLeaf = getConf(LEAFS_CURRENT);
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                stdOUT.accept(rt.getBranch(cBranch).getEffectiveProperty(PosixPath.ofPosix(cLeaf), args[1]));
+            });
+        } else if (test(args, "properties", "*", "set", "*")) {
+            String cLeaf = getConf(LEAFS_CURRENT);
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.setProperty(PosixPath.ofPosix(cLeaf), args[1], args[3]);
+                cBr.commit();
+                cBr.push();
+            });
+        } else if (test(args, "properties", "*", "delete")) {
+            String cLeaf = getConf(LEAFS_CURRENT);
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.deleteProperty(PosixPath.ofPosix(cLeaf), args[1]);
+                cBr.commit();
+                cBr.push();
+            });
+        } else {
+            wrongArgs(args);
+        }
+    }
+
+    private void changesAPI(String[] args) {
+        if (test(args, "changes", "explode")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 ConfigVersions cBr = rt.getBranch(cBranch);
@@ -143,7 +218,7 @@ public class App {
                         .forEach(stdOUT);
             });
         } else if (test(args, "changes", "list")) {
-            String cBranch = getCOnf(BRANCHES_CURRENT);
+            String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 ConfigVersions cBr = rt.getBranch(cBranch);
@@ -158,85 +233,35 @@ public class App {
                         .forEach(stdOUT);
             });
         } else if (test(args, "changes", "merge")) {
-            String cBranch = getCOnf(BRANCHES_CURRENT);
+            String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 ConfigVersions cBr = rt.getBranch(cBranch);
-                rt.getTrunk().pull();
+                rt.getTrunk().update();
                 rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
             });
-        } else if (test(args, "branches", "which")) {
-            stdOUT.accept(getCOnf(BRANCHES_CURRENT));
-        } else if (test(args, "leafs", "which")) {
-            stdOUT.accept(getCOnf(LEAFS_CURRENT));
-        } else if (test(args, "credentials", "which")) {
-            stdOUT.accept(getCOnf(CREDENTIALS_CURRENT));
-        } else if (test(args, "origins", "which")) {
-            stdOUT.accept(getCOnf(ORIGINS_CURRENT));
-        } else if (test(args, "properties", "list", "--format=lSPkEQv") ||
-                test(args, "properties", "list")) {
-            String cBranch = getCOnf(BRANCHES_CURRENT);
-
-            withRequestTree(rt -> {
-                        ConfigVersions branch = rt.getBranch(cBranch);
-                        branch.getProperties(branch.topVersion().get().getVersionHash())
-                                .forEach((k, v) -> stdOUT.accept(k.getKey() + " " + k.getValue() + "=" + v));
-                    }
-            );
-        } else if (test(args, "properties", "explode", "--format=lSPkEQv") ||
-                test(args, "properties", "explode")) {
-            String cBranch = getCOnf(BRANCHES_CURRENT);
-
-            withRequestTree(rt -> {
-                ConfigVersions branch = rt.getBranch(cBranch);
-                branch.getExplodedState(branch.topVersion().get().getVersionHash())
-                        .forEach((key, value) -> stdOUT.accept(key.getKey() + " " + key.getValue() + "=" + value));
-            });
-        } else if (test(args, "properties", "*", "get")) {
-            String cLeaf = getCOnf(LEAFS_CURRENT);
-            String cBranch = getCOnf(BRANCHES_CURRENT);
-
-            withRequestTree(rt -> {
-                stdOUT.accept(rt.getBranch(cBranch).getEffectiveProperty(PosixPath.ofPosix(cLeaf), args[1]));
-            });
-        } else if (test(args, "properties", "*", "set", "*")) {
-            String cLeaf = getCOnf(LEAFS_CURRENT);
-            String cBranch = getCOnf(BRANCHES_CURRENT);
+        } else if (test(args, "changes", "rebase")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 ConfigVersions cBr = rt.getBranch(cBranch);
-                cBr.setProperty(PosixPath.ofPosix(cLeaf), args[1], args[3]);
-                cBr.commit();
-                cBr.push();
+                rt.getTrunk().update();
+                rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
             });
-        } else if (test(args, "properties", "*", "delete")) {
-            String cLeaf = getCOnf(LEAFS_CURRENT);
-            String cBranch = getCOnf(BRANCHES_CURRENT);
-
-            withRequestTree(rt -> {
-                ConfigVersions cBr = rt.getBranch(cBranch);
-                cBr.deleteProperty(PosixPath.ofPosix(cLeaf), args[1]);
-                cBr.commit();
-                cBr.push();
-            });
-        } else if (test(args, "--version")) {
-            stdOUT.accept(System.getProperty(IO_GITHUB_VEZUVIO + ".version"));
-        } else if (test(args, "--help")) {
-            printHelp();
-        } else if (test(args, "--system.properties")) {
-            System.getProperties()
-                    .forEach((key, value) ->
-                            stdOUT.accept(String.format("%s=%s", key, value)));
         } else {
-            try {
-                throw new IllegalArgumentException("Wrong args: " + Stream.of(args)
-                        .map(cArg -> "<" + cArg + ">").collect(Collectors.joining(";")));
-            } catch (RuntimeException e) {
-                stdOUT.accept("Wrong arguments!");
-                printHelp();
+            wrongArgs(args);
+        }
+    }
 
-                throw e;
-            }
+    private void wrongArgs(String[] args) {
+        try {
+            throw new IllegalArgumentException("Wrong args: " + Stream.of(args)
+                    .map(cArg -> "<" + cArg + ">").collect(Collectors.joining(";")));
+        } catch (RuntimeException e) {
+            stdOUT.accept("Wrong arguments!");
+            printHelp();
+
+            throw e;
         }
     }
 
@@ -250,15 +275,25 @@ public class App {
         conf.getConf().setProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + originsCurrent, args[2]);
     }
 
-    private String getCOnf(String prop) {
+    private String getConf(String prop) {
         return conf.getConf().getEffectiveProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + prop);
     }
 
-    private boolean test(String[] args, String arg1, String... argsOther) {
+    public boolean test(String[] args, String arg1, String... argsOther) {
         return Stream.concat(Stream.of(arg1), Stream.of(argsOther))
                 .map(ArgsMatcher::exact)
                 .toList()
                 .equals(Arrays.stream(args).map(ArgsMatcher::escape).toList());
+    }
+
+    public boolean startsWith(String[] args, String arg1, String... argsOther) {
+        List<ArgsMatcher> expected = Stream.concat(Stream.of(arg1), Stream.of(argsOther))
+                .map(ArgsMatcher::exact)
+                .toList();
+
+        List<ArgsMatcher> actual = Arrays.stream(args).map(ArgsMatcher::escape).toList()
+                .stream().limit(expected.size()).toList();
+        return expected.equals(actual);
     }
 
     public static Path toPath(PosixPath pp) {
@@ -301,7 +336,7 @@ public class App {
                 branchName -> cache.computeIfAbsent(branchName, ss ->
                         {
                             RemoteOrigin remoteOrigin = new RemoteOrigin(
-                                    getCOnf(ORIGINS_CURRENT),
+                                    getConf(ORIGINS_CURRENT),
                                     fm,
                                     getAuthStrategy(),
                                     branchName,
@@ -333,7 +368,7 @@ public class App {
     }
 
     private GitAuth getAuthStrategy() {
-        String[] authVals = getCOnf(CREDENTIALS_CURRENT).split(":");
+        String[] authVals = getConf(CREDENTIALS_CURRENT).split(":");
         String authType = authVals[0];
         if (authType.equals("ssh-agent")) {
             return GitAuth.ofSshAgent(authVals[1]);
