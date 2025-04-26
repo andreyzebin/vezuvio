@@ -90,6 +90,7 @@ class UserScenarioTest {
         runApp("leafs use foo/application1");
         runApp("changes copy r2");
         runApp("branches use r2");
+        runApp("changes explode master");
         String loc = UUID.randomUUID().toString().substring(1, 5);
         String myPropName = "io.github.vu.myRandomProperty";
         runApp(String.format("properties " + myPropName + " set %s", loc));
@@ -106,6 +107,7 @@ class UserScenarioTest {
 
         runApp("changes explode r2");
         runApp("changes explode master");
+        runApp("changes list master");
 
         runApp("branches use r2");
         Assertions.assertEquals(loc, runApp("properties " + myPropName + " get"));
