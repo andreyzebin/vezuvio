@@ -232,6 +232,10 @@ public class App {
                                 ce.getValue().getAfter()))
                         .forEach(stdOUT);
             });
+        } else if (test(args, "changes", "merge", "*")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> rt.getBranch(cBranch).merge(args[2]));
         } else if (test(args, "changes", "merge")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
@@ -240,14 +244,14 @@ public class App {
                 rt.getTrunk().update();
                 rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
             });
-        } else if (test(args, "changes", "rebase")) {
+        } else if (test(args, "changes", "rebase", "*", "*")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
-            withRequestTree(rt -> {
-                ConfigVersions cBr = rt.getBranch(cBranch);
-                rt.getTrunk().update();
-                rt.merge(cBranch, cBr.topVersion().get().getVersionHash());
-            });
+            withRequestTree(rt -> rt.getBranch(cBranch).rebase(args[2], args[3]));
+        } else if (test(args, "changes", "copy", "*")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> rt.createBranch(cBranch, args[2]));
         } else {
             wrongArgs(args);
         }
@@ -332,6 +336,8 @@ public class App {
 
         Map<String, GitFs> cache = new HashMap<>();
         Map<PosixPath, ConfigVersions> cache2 = new HashMap<>();
+        AtomicReference<RequestTree> rts = new AtomicReference<>();
+
         RequestTree rt = new RequestTree(
                 branchName -> cache.computeIfAbsent(branchName, ss ->
                         {
@@ -360,10 +366,11 @@ public class App {
                     //fm.go(gitVersions.getLocation());
                     return cache2.computeIfAbsent(gitVersions.getLocation(), (k) -> {
                         ConfigTree ct = new ConfigTree(gitVersions.getDirectory());
-                        return new ConfigVersions(gitVersions, ct);
+                        return new ConfigVersions(gitVersions, ct, rts.get());
                     });
                 }, "master", fm);
 
+        rts.set(rt);
         consumer.accept(rt);
     }
 

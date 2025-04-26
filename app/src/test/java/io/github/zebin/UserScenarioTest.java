@@ -83,6 +83,30 @@ class UserScenarioTest {
     }
 
     @Test
+    public void testChangesAPI3() {
+        setupOrigin();
+
+        runApp("branches use master");
+        runApp("leafs use foo/application1");
+        runApp("changes copy r2");
+        runApp("branches use r2");
+        String loc = UUID.randomUUID().toString().substring(1, 5);
+        String myPropName = "io.github.vu.myRandomProperty";
+        runApp(String.format("properties " + myPropName + " set %s", loc));
+
+
+        runApp("branches use request-001");
+        runApp("changes copy request-001___r2");
+
+        runApp("branches use request-001___r2");
+        runApp("changes rebase master r2");
+        runApp("changes merge r2");
+
+        runApp("branches use r2");
+        Assertions.assertEquals(loc, runApp("properties " + myPropName + " get"));
+    }
+
+    @Test
     public void testPropsAPI2() {
         setupOrigin();
         runApp("branches use request-001");
