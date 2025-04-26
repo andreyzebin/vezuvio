@@ -93,14 +93,19 @@ class UserScenarioTest {
         String loc = UUID.randomUUID().toString().substring(1, 5);
         String myPropName = "io.github.vu.myRandomProperty";
         runApp(String.format("properties " + myPropName + " set %s", loc));
-
+        runApp("changes explode master");
 
         runApp("branches use request-001");
         runApp("changes copy request-001___r2");
 
         runApp("branches use request-001___r2");
+
         runApp("changes rebase master r2");
+        runApp("changes explode r2");
         runApp("changes merge r2");
+
+        runApp("changes explode r2");
+        runApp("changes explode master");
 
         runApp("branches use r2");
         Assertions.assertEquals(loc, runApp("properties " + myPropName + " get"));

@@ -217,12 +217,42 @@ public class App {
                                 ce.getValue().getAfter()))
                         .forEach(stdOUT);
             });
+        } else if (test(args, "changes", "explode", "*")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.getExplodedChanges(cBr.getOffset(args[2]), cBr.topVersion().get().getVersionHash())
+                        .entrySet()
+                        .stream()
+                        .map(ce -> String.format("%s %s: %s -> %s",
+                                ce.getKey().getKey(),
+                                ce.getKey().getValue(),
+                                ce.getValue().getBefore(),
+                                ce.getValue().getAfter()))
+                        .forEach(stdOUT);
+            });
         } else if (test(args, "changes", "list")) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 ConfigVersions cBr = rt.getBranch(cBranch);
                 cBr.getChanges(rt.getOffset(cBranch), cBr.topVersion().get().getVersionHash())
+                        .entrySet()
+                        .stream()
+                        .map(ce -> String.format("%s %s: %s -> %s",
+                                ce.getKey().getKey(),
+                                ce.getKey().getValue(),
+                                ce.getValue().getBefore(),
+                                ce.getValue().getAfter()))
+                        .forEach(stdOUT);
+            });
+        } else if (test(args, "changes", "list", "*")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                ConfigVersions cBr = rt.getBranch(cBranch);
+                cBr.getChanges(cBr.getOffset(args[2]), cBr.topVersion().get().getVersionHash())
                         .entrySet()
                         .stream()
                         .map(ce -> String.format("%s %s: %s -> %s",
