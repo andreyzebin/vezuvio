@@ -111,6 +111,11 @@ public class App {
             setConf(CREDENTIALS_CURRENT, args[2]);
         } else if (test(args, "branches", "use", "*")) {
             setConf(BRANCHES_CURRENT, args[2]);
+        } else if (test(args, "branches", "fork", "*")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> rt.createBranch(cBranch, args[2]));
+            setConf(BRANCHES_CURRENT, args[2]);
         } else if (test(args, "leafs", "use", "*")) {
             setConf(LEAFS_CURRENT, args[2]);
         } else if (test(args, "leafs", "drop")) {

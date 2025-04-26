@@ -87,20 +87,18 @@ class UserScenarioTest {
         setupOrigin();
 
         runApp("branches use master");
-        runApp("leafs use foo/application1");
-        runApp("changes use base master");
-        runApp("changes copy r2");
-        runApp("branches use r2");
-        runApp("changes explode");
+        runApp("branches fork r2");
+        Assertions.assertEquals("", runApp("changes explode"));
         String loc = UUID.randomUUID().toString().substring(1, 5);
         String myPropName = "io.github.vu.myRandomProperty";
+        runApp("leafs use foo/application1");
         runApp(String.format("properties " + myPropName + " set %s", loc));
-        runApp("changes explode");
+
+        runApp("changes use base master");
+        Assertions.assertNotEquals("", runApp("changes explode"));
 
         runApp("branches use request-001");
-        runApp("changes copy request-001.r2");
-        runApp("branches use request-001.r2");
-
+        runApp("branches fork request-001.r2");
         runApp("changes rebase r2");
         Assertions.assertEquals("r2", runApp("changes which base"));
 
