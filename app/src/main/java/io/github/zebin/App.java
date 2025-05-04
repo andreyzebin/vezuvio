@@ -35,6 +35,9 @@ public class App {
     public static final String BRANCHES_CURRENT = "branches.current";
     public static final String CHANGES_BASE = "changes.base";
     public static final String LEAFS_CURRENT = "leafs.current";
+
+    public static final String LIST_METHOD = "list|ls";
+    public static final String CHANGES_API = "changes";
     private FileManager fm;
     private final Consumer<String> stdOUT;
     private final Consumer<String> stdERR;
@@ -103,37 +106,24 @@ public class App {
         fm = new FileManager(terminal);
         String os = terminal.eval("echo $(uname)");
 
-        if (test(args, "origins", "use", "*")) {
+        if (test(args, "origins", "use", anyWord())) {
             setConf(ORIGINS_CURRENT, args[2]);
-        } else if (test(args, "credentials", "use", "*")) {
+        } else if (test(args, "credentials", "use", anyWord())) {
             setConf(CREDENTIALS_CURRENT, args[2]);
-        } else if (test(args, "branches", "prune")) {
-            fm.remove(conf.getVezuvioLocalHome().climb("tmp"));
-        } else if (test(args, "branches", "use", "*")) {
-            setConf(BRANCHES_CURRENT, args[2]);
-        } else if (test(args, "branches", "fork", "*")) {
-            String cBranch = getConf(BRANCHES_CURRENT);
-
-            withRequestTree(rt -> rt.createBranch(cBranch, args[2]));
-            setConf(BRANCHES_CURRENT, args[2]);
-        } else if (test(args, "leafs", "use", "*")) {
+        } else if (test(args, "leafs", "use", anyWord())) {
             setConf(LEAFS_CURRENT, args[2]);
         } else if (test(args, "leafs", "drop")) {
             conf.getConf().deleteProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + LEAFS_CURRENT);
-        } else if (test(args, "branches", "list")) {
-            withRequestTree(rt -> {
-                rt.listBranches().forEach(stdOUT::accept);
-            });
-        } else if (test(args, "leafs", "list")) {
+        } else if (test(args, "leafs", LIST_METHOD)) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 rt.getBranch(cBranch).getLeafs().map(PosixPath::toString).forEach(stdOUT);
             });
-        } else if (startsWith(args, "changes")) {
+        } else if (startsWith(args, CHANGES_API)) {
             changesAPI(args);
-        } else if (test(args, "branches", "which")) {
-            stdOUT.accept(getConf(BRANCHES_CURRENT));
+        } else if (startsWith(args, "branches")) {
+            branchesAPI(args);
         } else if (test(args, "leafs", "which")) {
             stdOUT.accept(getConf(LEAFS_CURRENT));
         } else if (test(args, "credentials", "which")) {
@@ -155,9 +145,13 @@ public class App {
         }
     }
 
+    private static String anyWord() {
+        return "*";
+    }
+
     private void propertiesAPI(String[] args) {
-        if (test(args, "properties", "list", "--format=lSPkEQv") ||
-                test(args, "properties", "list")) {
+        if (test(args, "properties", LIST_METHOD, "--format=lSPkEQv") ||
+                test(args, "properties", LIST_METHOD)) {
             String cBranch = getConf(BRANCHES_CURRENT);
             // TODO show only current leaf
             withRequestTree(rt -> {
@@ -174,14 +168,14 @@ public class App {
                 branch.getExplodedState(branch.topVersion().get().getVersionHash())
                         .forEach((key, value) -> stdOUT.accept(key.getKey() + " " + key.getValue() + "=" + value));
             });
-        } else if (test(args, "properties", "*", "get")) {
+        } else if (test(args, "properties", anyWord(), "get")) {
             String cLeaf = getConf(LEAFS_CURRENT);
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 stdOUT.accept(rt.getBranch(cBranch).getEffectiveProperty(PosixPath.ofPosix(cLeaf), args[1]));
             });
-        } else if (test(args, "properties", "*", "set", "*")) {
+        } else if (test(args, "properties", anyWord(), "set", anyWord())) {
             String cLeaf = getConf(LEAFS_CURRENT);
             String cBranch = getConf(BRANCHES_CURRENT);
 
@@ -191,7 +185,7 @@ public class App {
                 cBr.commit();
                 cBr.push();
             });
-        } else if (test(args, "properties", "*", "delete")) {
+        } else if (test(args, "properties", anyWord(), "delete")) {
             String cLeaf = getConf(LEAFS_CURRENT);
             String cBranch = getConf(BRANCHES_CURRENT);
 
@@ -206,49 +200,70 @@ public class App {
         }
     }
 
+    private void branchesAPI(String[] args) {
+        if (test(args, "branches", "which")) {
+            stdOUT.accept(getConf(BRANCHES_CURRENT));
+        } else if (test(args, "branches", LIST_METHOD)) {
+            withRequestTree(rt -> {
+                rt.listBranches().forEach(stdOUT::accept);
+            });
+        } else if (test(args, "branches", "prune")) {
+            fm.remove(conf.getVezuvioLocalHome().climb("tmp"));
+        } else if (test(args, "branches", "use", anyWord())) {
+            setConf(BRANCHES_CURRENT, args[2]);
+        } else if (test(args, "branches", "fork", anyWord())) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> rt.createBranch(cBranch, args[2]));
+            setConf(BRANCHES_CURRENT, args[2]);
+        } else {
+            wrongArgs(args);
+        }
+    }
+
     private void changesAPI(String[] args) {
-        if (test(args, "changes", "explode")) {
+        if (test(args, CHANGES_API, "explode")) {
             String cBranch = getConf(BRANCHES_CURRENT);
             String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
             changesExplodeAPI(cBranch, baseBranch);
-        } else if (test(args, "changes", "use", "base", "*")) {
+        } else if (test(args, CHANGES_API, "use", "base", anyWord())) {
             setConf(CHANGES_BASE, args[3]);
-        } else if (test(args, "changes", "which", "base")) {
+        } else if (test(args, CHANGES_API, "which", "base")) {
             stdOUT.accept(getConf(CHANGES_BASE));
-        } else if (test(args, "changes", "explode", "*")) {
+        } else if (test(args, CHANGES_API, "explode", anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             changesExplodeAPI(cBranch, args[2]);
-        } else if (test(args, "changes", "list")) {
+        } else if (test(args, CHANGES_API, LIST_METHOD)) {
             String cBranch = getConf(BRANCHES_CURRENT);
             String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
             changesListAPI(cBranch, baseBranch);
-        } else if (test(args, "changes", "list", "*")) {
+        } else if (test(args, CHANGES_API, LIST_METHOD, anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             changesListAPI(cBranch, args[2]);
-        } else if (test(args, "changes", "merge", "*")) {
+        } else if (test(args, CHANGES_API, "merge", anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> rt.getBranch(cBranch).merge(args[2]));
-        } else if (test(args, "changes", "merge")) {
+        } else if (test(args, CHANGES_API, "merge")) {
             String cBranch = getConf(BRANCHES_CURRENT);
             String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
             withRequestTree(rt -> rt.getBranch(cBranch).merge(baseBranch));
-        } else if (test(args, "changes", "rebase", "*", "*")) {
+        } else if (test(args, CHANGES_API, "rebase", anyWord(), anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> rt.getBranch(cBranch).rebase(args[2], args[3]));
-        } else if (test(args, "changes", "rebase", "*")) {
+        } else if (test(args, CHANGES_API, "rebase", anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
             String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
             withRequestTree(rt -> rt.getBranch(cBranch).rebase(baseBranch, args[2]));
             setConf(CHANGES_BASE, args[2]);
-        } else if (test(args, "changes", "copy", "*")) {
+        } else if (test(args, CHANGES_API, "copy", anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> rt.createBranch(cBranch, args[2]));
@@ -314,10 +329,11 @@ public class App {
     }
 
     public boolean test(String[] args, String arg1, String... argsOther) {
-        return Stream.concat(Stream.of(arg1), Stream.of(argsOther))
+        List<ArgsMatcher> expectedArgs = Stream.concat(Stream.of(arg1), Stream.of(argsOther))
                 .map(ArgsMatcher::exact)
-                .toList()
-                .equals(Arrays.stream(args).map(ArgsMatcher::escape).toList());
+                .toList();
+        List<ArgsMatcher> testArgs = Arrays.stream(args).map(ArgsMatcher::escape).toList();
+        return expectedArgs.equals(testArgs);
     }
 
     public boolean startsWith(String[] args, String arg1, String... argsOther) {

@@ -1,22 +1,30 @@
 package io.github.zebin;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ArgsMatcher {
     public static final ArgsMatcher ANY = new ArgsMatcher(true, "*");
     private final boolean isWildCard;
-    private final String template;
+    private final Set<String> in;
 
     private ArgsMatcher(boolean isWildCard, String template) {
         this.isWildCard = isWildCard;
-        this.template = template;
+        this.in = Set.of(template);
+    }
+
+    private ArgsMatcher(boolean isWildCard, Set<String> template) {
+        this.isWildCard = isWildCard;
+        this.in = template;
     }
 
     public static ArgsMatcher exact(String s) {
         if (s.equals("*")) {
             return ANY;
         }
-        return new ArgsMatcher(false, s);
+        return new ArgsMatcher(false, Arrays.stream(s.split("\\|")).collect(Collectors.toSet()));
     }
 
     public static ArgsMatcher escape(String s) {
@@ -30,7 +38,7 @@ public class ArgsMatcher {
         if (isWildCard || that.isWildCard) {
             return true;
         }
-        return Objects.equals(template, that.template);
+        return in.containsAll(that.in);
     }
 
     @Override

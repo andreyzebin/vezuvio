@@ -163,7 +163,7 @@ class UserScenarioTest {
     public void testCursorAPI() {
         setupOrigin();
 
-        runApp("branches list");
+        runApp("branches ls");
         runApp("branches use master");
         Assertions.assertEquals("master", runApp("branches which"));
 
