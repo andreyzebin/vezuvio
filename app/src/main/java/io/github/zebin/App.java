@@ -38,6 +38,7 @@ public class App {
 
     public static final String LIST_METHOD = "list|ls";
     public static final String CHANGES_API = "changes";
+    public static final String EXPLODE_METHOD = "explode|exp";
     private FileManager fm;
     private final Consumer<String> stdOUT;
     private final Consumer<String> stdERR;
@@ -159,8 +160,8 @@ public class App {
                 branch.getProperties(branch.topVersion().get().getVersionHash())
                         .forEach((k, v) -> stdOUT.accept(k.getKey() + " " + k.getValue() + "=" + v));
             });
-        } else if (test(args, "properties", "explode", "--format=lSPkEQv") ||
-                test(args, "properties", "explode")) {
+        } else if (test(args, "properties", EXPLODE_METHOD, "--format=lSPkEQv") ||
+                test(args, "properties", EXPLODE_METHOD)) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
@@ -222,7 +223,7 @@ public class App {
     }
 
     private void changesAPI(String[] args) {
-        if (test(args, CHANGES_API, "explode")) {
+        if (test(args, CHANGES_API, EXPLODE_METHOD)) {
             String cBranch = getConf(BRANCHES_CURRENT);
             String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
@@ -231,7 +232,7 @@ public class App {
             setConf(CHANGES_BASE, args[3]);
         } else if (test(args, CHANGES_API, "which", "base")) {
             stdOUT.accept(getConf(CHANGES_BASE));
-        } else if (test(args, CHANGES_API, "explode", anyWord())) {
+        } else if (test(args, CHANGES_API, EXPLODE_METHOD, anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
             changesExplodeAPI(cBranch, args[2]);
