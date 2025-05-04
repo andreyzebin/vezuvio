@@ -8,10 +8,7 @@ import io.github.andreyzebin.gitSql.cache.GitFsCacheProxy;
 import io.github.andreyzebin.gitSql.config.ConfigTree;
 import io.github.andreyzebin.gitSql.config.ConfigVersions;
 import io.github.andreyzebin.gitSql.config.RequestTree;
-import io.github.andreyzebin.gitSql.git.GitAuth;
-import io.github.andreyzebin.gitSql.git.GitConfigurations;
-import io.github.andreyzebin.gitSql.git.GitFs;
-import io.github.andreyzebin.gitSql.git.RemoteOrigin;
+import io.github.andreyzebin.gitSql.git.*;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.process.TextTerminal;
@@ -21,6 +18,7 @@ import io.github.zebin.javabash.sandbox.PosixPath;
 import io.github.zebin.javabash.sandbox.WorkingDirectory;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -109,6 +107,8 @@ public class App {
             setConf(ORIGINS_CURRENT, args[2]);
         } else if (test(args, "credentials", "use", "*")) {
             setConf(CREDENTIALS_CURRENT, args[2]);
+        } else if (test(args, "branches", "prune")) {
+            fm.remove(conf.getVezuvioLocalHome().climb("tmp"));
         } else if (test(args, "branches", "use", "*")) {
             setConf(BRANCHES_CURRENT, args[2]);
         } else if (test(args, "branches", "fork", "*")) {
@@ -159,13 +159,12 @@ public class App {
         if (test(args, "properties", "list", "--format=lSPkEQv") ||
                 test(args, "properties", "list")) {
             String cBranch = getConf(BRANCHES_CURRENT);
-
+            // TODO show only current leaf
             withRequestTree(rt -> {
-                        ConfigVersions branch = rt.getBranch(cBranch);
-                        branch.getProperties(branch.topVersion().get().getVersionHash())
-                                .forEach((k, v) -> stdOUT.accept(k.getKey() + " " + k.getValue() + "=" + v));
-                    }
-            );
+                ConfigVersions branch = rt.getBranch(cBranch);
+                branch.getProperties(branch.topVersion().get().getVersionHash())
+                        .forEach((k, v) -> stdOUT.accept(k.getKey() + " " + k.getValue() + "=" + v));
+            });
         } else if (test(args, "properties", "explode", "--format=lSPkEQv") ||
                 test(args, "properties", "explode")) {
             String cBranch = getConf(BRANCHES_CURRENT);
@@ -331,35 +330,6 @@ public class App {
         return expected.equals(actual);
     }
 
-    public static Path toPath(PosixPath pp) {
-        String osNameLowercased = System.getProperty("os.name").toLowerCase();
-        boolean isWindows = osNameLowercased.startsWith("windows");
-        if (isWindows) {
-            if (pp.isAbsolute()) {
-                PosixPath disk = pp;
-                while (disk.length() > 1) {
-                    disk = disk.descend();
-                }
-                return Path.of(disk.getEnd().toUpperCase() + ":\\")
-                        .resolve(pp.relativize(disk).toString().replace("/", "\\"));
-            }
-        }
-        return pp.toPath();
-    }
-
-    public static PosixPath ofPath(Path pp) {
-        String osNameLowercased = System.getProperty("os.name").toLowerCase();
-        boolean isWindows = osNameLowercased.startsWith("windows");
-        if (isWindows) {
-            if (pp.isAbsolute()) {
-                Path disk = pp.getRoot();
-                return PosixPath.ofPosix("/" + disk.toString().toLowerCase().replace("\\", "")
-                        .replace(":", "")).climb(PosixPath.of(disk.relativize(pp)));
-            }
-        }
-        return PosixPath.of(pp);
-    }
-
     public void withRequestTree(Consumer<RequestTree> consumer) {
         // master, request-001
         AtomicReference<String> cControl = new AtomicReference<>();
@@ -369,29 +339,17 @@ public class App {
         Map<PosixPath, ConfigVersions> cache2 = new HashMap<>();
         AtomicReference<RequestTree> rts = new AtomicReference<>();
 
-        RequestTree rt = new RequestTree(
+        GitConfigurations cfgs = getGitConfigurations();
+        RequestTree rt = getRequestTree(cache, fm, cfgs, cControl, cache2, rts);
+        rts.set(rt);
+        consumer.accept(rt);
+    }
+
+    private RequestTree getRequestTree(Map<String, GitFs> cache, FileManagerCacheProxy fm, GitConfigurations cfgs, AtomicReference<String> cControl, Map<PosixPath, ConfigVersions> cache2, AtomicReference<RequestTree> rts) {
+        //fm.go(gitVersions.getLocation());
+        return new RequestTree(
                 branchName -> cache.computeIfAbsent(branchName, ss ->
-                        {
-                            RemoteOrigin remoteOrigin = new RemoteOrigin(
-                                    getConf(ORIGINS_CURRENT),
-                                    fm,
-                                    getAuthStrategy(),
-                                    branchName,
-                                    new GitConfigurations() {
-                                        @Override
-                                        public Path getHomeTemporaryDir() {
-                                            return toPath(conf.getVezuvioLocalHome().climb("tmp"));
-                                        }
-                                    },
-                                    WorkingDirectory::new
-                            );
-
-                            GitFsCacheProxy gfs = GitFsCacheProxy.cachedProxy(remoteOrigin, cControl);
-                            gfs.addListener(fm);
-                            gfs.setBranch(branchName);
-                            return gfs;
-                        }
-
+                        getGitFsCacheProxy(branchName, fm, cfgs, cControl)
                 ),
                 gitVersions -> {
                     //fm.go(gitVersions.getLocation());
@@ -400,9 +358,67 @@ public class App {
                         return new ConfigVersions(gitVersions, ct, rts.get());
                     });
                 }, "master", fm);
+    }
 
-        rts.set(rt);
-        consumer.accept(rt);
+    private GitConfigurations getGitConfigurations() {
+        //String rand = UUID.randomUUID().toString().substring(0, 4);
+        return new GitConfigurations() {
+
+            @Override
+            public String getTemporaryName(String gitUri1, String branch) {
+                //String rand = UUID.randomUUID().toString().substring(0, 4);
+                String[] split = gitUri1.replace(":", "://").replace("@", URLEncoder.encode("@")).replace(".git", "").split("/");
+                String name = split[split.length - 1];
+                return name + (branch != null ? "_" + branch : "") + "_" + "rand";
+            }
+
+            @Override
+            public Path getHomeTemporaryDir() {
+                return conf.getVezuvioLocalHome().climb("tmp").toPath();
+            }
+        };
+    }
+
+    private GitFsCacheProxy getGitFsCacheProxy(
+            String branchName,
+            FileManagerCacheProxy fm,
+            GitConfigurations cfgs,
+            AtomicReference<String> cControl
+    ) {
+        RemoteOrigin remoteOrigin = new RemoteOrigin(
+                getConf(ORIGINS_CURRENT),
+                fm,
+                getAuthStrategy(),
+                branchName,
+                cfgs,
+                WorkingDirectory::new
+        ) {
+            public Path getRoot() {
+                if (this.root == null) {
+                    log.debug("Initializing Git root...");
+                    return this.recoverState(() -> {
+                        String tempDirName = cfgs.getTemporaryName(this.gitUri, branchName);
+
+                        // check if directory exists
+                        PosixPath girRoot = PosixPath.of(cfgs.getHomeTemporaryDir())
+                                .climb(PosixPath.ofPosix(tempDirName));
+                        if (fm.exists(girRoot)) {
+                            this.root = girRoot.toPath();
+                            return this.root;
+                        }
+
+                        return super.getRoot();
+                    });
+                } else {
+                    return this.root;
+                }
+            }
+        };
+
+        GitFsCacheProxy gfs = GitFsCacheProxy.cachedProxy(remoteOrigin, cControl);
+        gfs.addListener(fm);
+        gfs.setBranch(branchName);
+        return gfs;
     }
 
     private GitAuth getAuthStrategy() {

@@ -224,11 +224,14 @@ class UserScenarioTest {
     void setupOrigin() {
         runApp("origins use ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git");
         runApp("credentials use ssh-agent:~/.ssh/zebin");
+        runApp("changes use base master");
 
         Assertions.assertEquals("ssh://git@127.0.0.1:2222/git-server/repos/myrepo.git",
                 runApp("origins which"));
         Assertions.assertEquals("ssh-agent:~/.ssh/zebin",
                 runApp("credentials which"));
+
+        runApp("branches prune");
     }
 
     private static String decode(String s) {

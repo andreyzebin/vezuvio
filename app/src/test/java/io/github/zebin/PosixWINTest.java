@@ -13,7 +13,7 @@ public class PosixWINTest {
         String osNameLowercased = System.getProperty("os.name").toLowerCase();
         boolean isWindows = osNameLowercased.startsWith("windows");
         if (isWindows) {
-            Assertions.assertEquals(Path.of("C:", "Users"), App.toPath(PosixPath.ofPosix("/c/Users")));
+            Assertions.assertEquals(Path.of("C:", "Users"), PosixPath.ofPosix("/c/Users").toPath());
             Assertions.assertEquals(PosixPath.ofPosix("/c/Users"), PosixPath.of(Path.of("C:", "Users")));
 
             Assertions.assertEquals(Path.of("C:", "Users"), PosixPath.ofPosix("/c/Users").toPath());
@@ -21,7 +21,7 @@ public class PosixWINTest {
         } else {
             Assertions.assertEquals(Path.of("/", "c", "Users"), PosixPath.ofPosix("/c/Users").toPath());
             Assertions.assertEquals(Path.of("Users"), PosixPath.ofPosix("Users").toPath());
-            Assertions.assertEquals(Path.of("/", "c", "Users"), App.toPath(PosixPath.ofPosix("/c/Users")));
+            Assertions.assertEquals(Path.of("/", "c", "Users"), PosixPath.ofPosix("/c/Users").toPath());
         }
     }
 }
