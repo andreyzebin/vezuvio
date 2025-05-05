@@ -1,10 +1,12 @@
 package io.github.zebin;
 
+import io.github.andreyzebin.gitSql.cache.FileManagerCacheProxy;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.frontend.TerminalPalette;
 import io.github.zebin.javabash.frontend.TextBrush;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.process.TextTerminal;
+import io.github.zebin.javabash.sandbox.AllFileManager;
 import io.github.zebin.javabash.sandbox.BashUtils;
 import io.github.zebin.javabash.sandbox.FileManager;
 import io.github.zebin.javabash.sandbox.PosixPath;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,6 +26,7 @@ class UserScenarioTest {
     static FileManager fm;
     static PosixPath buildRoot;
     static TestGitUtils.MutableMock git;
+    private static Configurations conf;
 
     @BeforeAll
     static void prepareAll() {
@@ -38,6 +42,7 @@ class UserScenarioTest {
     void prepare() {
         log.info("Resetting git server...");
         git.reset();
+        conf = getConfigurations();
     }
 
     @Test
@@ -240,11 +245,6 @@ class UserScenarioTest {
     }
 
     private static String runApp(String s) {
-        TextTerminal terminal = new FunnyTerminal(
-                new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
-        );
-        FileManager fm = new FileManager(terminal);
-        fm.goUp();
 
         String cmdRender = newCanvas(String.format("vezuvio %s", s))
                 .paint("un", TerminalPalette.RED_BOLD)
@@ -281,13 +281,30 @@ class UserScenarioTest {
         }, (line) -> {
             sb.append(line);
             sb.append(System.lineSeparator());
-        }, new Configurations(fm.getCurrent(), terminal, VirtualDirectoryTree.OS_LEVEL_CONF));
+        }, conf);
+        long start = System.currentTimeMillis();
         app.run(s.split(" "));
+        long finish = System.currentTimeMillis();
+        log.info("> took: {}ms", (finish - start));
+
         sb.toString().lines().forEach(cl -> log.info("> " + newCanvas(cl)
                 //.fill(TerminalPalette.BLUE)
                 .fill(TerminalPalette.BLUE)
                 .toString()));
         return decode(sb.toString());
+    }
+
+    private static Configurations getConfigurations() {
+        TextTerminal terminal = new FunnyTerminal(
+                new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
+        );
+        AllFileManager cfgFiles = new FileManager(terminal);
+        cfgFiles =  FileManagerCacheProxy.cachedProxy(cfgFiles, new AtomicReference<>("kk"));
+        cfgFiles.goUp();
+        return new Configurations(
+                cfgFiles.getCurrent(),
+                terminal,
+                VirtualDirectoryTree.OS_LEVEL_CONF);
     }
 
     private static TextBrush newCanvas(String s) {

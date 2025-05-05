@@ -12,10 +12,7 @@ import io.github.andreyzebin.gitSql.git.*;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.process.TextTerminal;
-import io.github.zebin.javabash.sandbox.BashUtils;
-import io.github.zebin.javabash.sandbox.FileManager;
-import io.github.zebin.javabash.sandbox.PosixPath;
-import io.github.zebin.javabash.sandbox.WorkingDirectory;
+import io.github.zebin.javabash.sandbox.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URLEncoder;
@@ -36,8 +33,8 @@ public class App {
     public static final String CHANGES_BASE = "changes.base";
     public static final String LEAFS_CURRENT = "leafs.current";
 
-    public static final String LIST_METHOD = "list|ls";
     public static final String CHANGES_API = "changes";
+    public static final String LIST_METHOD = "list|ls";
     public static final String EXPLODE_METHOD = "explode|exp";
     private FileManager fm;
     private final Consumer<String> stdOUT;
@@ -68,7 +65,9 @@ public class App {
         TextTerminal terminal = new FunnyTerminal(
                 new TerminalProcess(BashUtils.runShellForOs(Runtime.getRuntime()))
         );
-        FileManager fm = new FileManager(terminal);
+        AllFileManager fm = new FileManager(terminal);
+
+        fm =  FileManagerCacheProxy.cachedProxy(fm, new AtomicReference<>("kk"));
         String workingDirOverride = System.getProperty(IO_GITHUB_VEZUVIO + ".workingDirectory");
         PosixPath wd;
         if (workingDirOverride != null) {
@@ -82,7 +81,7 @@ public class App {
         boolean workDirConfExist = fm.dirExists(wd.climb(".vezuvio"));
         Configurations cnf = new Configurations(wd, terminal, workDirConfExist ?
                 VirtualDirectoryTree.WORKDIR_LEVEL_CONF :
-                VirtualDirectoryTree.USER_LEVEL_CONF);
+                VirtualDirectoryTree.USER_LEVEL_CONF, fm);
 
         log.info("Configuration top is {}", cnf.getConfLevel());
         new App(System.out::println, System.err::println, cnf).run(args);
