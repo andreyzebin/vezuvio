@@ -188,10 +188,13 @@ public class App {
                 ConfigVersions branch = rt.getBranch(cBranch);
                 StringBuffer bw = new StringBuffer();
 
+                Comparator<Map.Entry<Map.Entry<PosixPath, String>, String>> comparator = Comparator
+                        .comparing(ff -> ff.getKey().getKey().toString());
                 branch.getExplodedState(branch.topVersion().get().getVersionHash())
                         .entrySet()
                         .stream()
                         .filter(cEntr -> cEntr.getKey().getKey().toString().equals(cLeaf) || !useLeafFilter)
+                        .sorted(comparator)
                         .forEach((key) -> bw.append(
                                 String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n",
                                         key.getKey().getKey(), key.getKey().getValue(), key.getValue())
