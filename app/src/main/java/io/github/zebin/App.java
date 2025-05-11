@@ -3,18 +3,23 @@
  */
 package io.github.zebin;
 
+import io.github.andreyzebin.gitSql.FileSystemUtils;
 import io.github.andreyzebin.gitSql.cache.FileManagerCacheProxy;
 import io.github.andreyzebin.gitSql.cache.GitFsCacheProxy;
 import io.github.andreyzebin.gitSql.config.ConfigTree;
 import io.github.andreyzebin.gitSql.config.ConfigVersions;
 import io.github.andreyzebin.gitSql.config.RequestTree;
-import io.github.andreyzebin.gitSql.git.*;
+import io.github.andreyzebin.gitSql.git.GitAuth;
+import io.github.andreyzebin.gitSql.git.GitConfigurations;
+import io.github.andreyzebin.gitSql.git.GitFs;
+import io.github.andreyzebin.gitSql.git.RemoteOrigin;
 import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.process.TextTerminal;
 import io.github.zebin.javabash.sandbox.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.*;
@@ -67,7 +72,7 @@ public class App {
         );
         AllFileManager fm = new FileManager(terminal);
 
-        fm =  FileManagerCacheProxy.cachedProxy(fm, new AtomicReference<>("kk"));
+        fm = FileManagerCacheProxy.cachedProxy(fm, new AtomicReference<>("kk"));
         String workingDirOverride = System.getProperty(IO_GITHUB_VEZUVIO + ".workingDirectory");
         PosixPath wd;
         if (workingDirOverride != null) {
@@ -149,7 +154,12 @@ public class App {
         return "*";
     }
 
-    private void propertiesAPI(String[] args) {
+    private void propertiesAPI(String[] args1) {
+        boolean useLeafFilter = Arrays.stream(args1).toList().contains("--filter");
+        String cLeaf = getConf(LEAFS_CURRENT);
+        String[] args = Arrays.stream(args1).toList().stream().filter(cArg -> !cArg.equals("--filter"))
+                .toArray(String[]::new);
+
         if (test(args, "properties", LIST_METHOD, "--format=lSPkEQv") ||
                 test(args, "properties", LIST_METHOD)) {
             String cBranch = getConf(BRANCHES_CURRENT);
@@ -166,17 +176,42 @@ public class App {
             withRequestTree(rt -> {
                 ConfigVersions branch = rt.getBranch(cBranch);
                 branch.getExplodedState(branch.topVersion().get().getVersionHash())
-                        .forEach((key, value) -> stdOUT.accept(key.getKey() + " " + key.getValue() + "=" + value));
+                        .entrySet()
+                        .stream()
+                        .filter(cEntr -> cEntr.getKey().getKey().toString().equals(cLeaf) || !useLeafFilter)
+                        .forEach((key) -> stdOUT.accept(key.getKey().getKey() + " " + key.getKey().getValue() + "=" + key.getValue()));
+            });
+        } else if (test(args, "properties", EXPLODE_METHOD, "--format=html")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+
+            withRequestTree(rt -> {
+                ConfigVersions branch = rt.getBranch(cBranch);
+                StringBuffer bw = new StringBuffer();
+
+                branch.getExplodedState(branch.topVersion().get().getVersionHash())
+                        .entrySet()
+                        .stream()
+                        .filter(cEntr -> cEntr.getKey().getKey().toString().equals(cLeaf) || !useLeafFilter)
+                        .forEach((key) -> bw.append(
+                                String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n",
+                                        key.getKey().getKey(), key.getKey().getValue(), key.getValue())
+
+
+                        ));
+
+                InputStreamReader template = new InputStreamReader(
+                        getClass().getClassLoader().getResourceAsStream("presentation/web/index.html"));
+
+                String html = FileSystemUtils.loadFile(template).replace("$props", bw);
+                html.lines().forEach(stdOUT);
             });
         } else if (test(args, "properties", anyWord(), "get")) {
-            String cLeaf = getConf(LEAFS_CURRENT);
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
                 stdOUT.accept(rt.getBranch(cBranch).getEffectiveProperty(PosixPath.ofPosix(cLeaf), args[1]));
             });
         } else if (test(args, "properties", anyWord(), "set", anyWord())) {
-            String cLeaf = getConf(LEAFS_CURRENT);
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {
@@ -186,7 +221,6 @@ public class App {
                 cBr.push();
             });
         } else if (test(args, "properties", anyWord(), "delete")) {
-            String cLeaf = getConf(LEAFS_CURRENT);
             String cBranch = getConf(BRANCHES_CURRENT);
 
             withRequestTree(rt -> {

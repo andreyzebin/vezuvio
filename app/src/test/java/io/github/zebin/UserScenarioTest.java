@@ -165,6 +165,15 @@ class UserScenarioTest {
     }
 
     @Test
+    public void testPropertiesApiHtml() {
+        setupOrigin();
+
+        runApp("branches use master");
+        runApp("properties explode --format=html");
+
+    }
+
+    @Test
     public void testCursorAPI() {
         setupOrigin();
 
@@ -244,7 +253,7 @@ class UserScenarioTest {
                 .collect(Collectors.joining(System.lineSeparator()));
     }
 
-    private static String runApp(String s) {
+    public String runApp(String s) {
 
         String cmdRender = newCanvas(String.format("vezuvio %s", s))
                 .paint("un", TerminalPalette.RED_BOLD)
