@@ -6,6 +6,7 @@ package io.github.zebin;
 import io.github.andreyzebin.gitSql.FileSystemUtils;
 import io.github.andreyzebin.gitSql.cache.FileManagerCacheProxy;
 import io.github.andreyzebin.gitSql.cache.GitFsCacheProxy;
+import io.github.andreyzebin.gitSql.config.ConfigHistory;
 import io.github.andreyzebin.gitSql.config.ConfigTree;
 import io.github.andreyzebin.gitSql.config.ConfigVersions;
 import io.github.andreyzebin.gitSql.config.RequestTree;
@@ -25,6 +26,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -190,23 +192,16 @@ public class App {
 
                 Comparator<Map.Entry<Map.Entry<PosixPath, String>, String>> comparator = Comparator
                         .comparing(ff -> ff.getKey().getKey().toString());
-                branch.getExplodedState(branch.topVersion().get().getVersionHash())
-                        .entrySet()
-                        .stream()
-                        .filter(cEntr -> cEntr.getKey().getKey().toString().equals(cLeaf) || !useLeafFilter)
-                        .sorted(comparator)
-                        .forEach((key) -> bw.append(
+                toHTMlState(
+                        branch.getExplodedState(branch.topVersion().get().getVersionHash()),
+                        comparator,
+                        bw,
+                        cBranch,
+                        (key) -> bw.append(
                                 String.format("<tr><td>%s</td><td>%s</td><td>%s</td></tr>\n",
-                                        key.getKey().getKey(), key.getKey().getValue(), key.getValue())
-
-
-                        ));
-
-                InputStreamReader template = new InputStreamReader(
-                        getClass().getClassLoader().getResourceAsStream("presentation/web/index.html"));
-
-                String html = FileSystemUtils.loadFile(template).replace("$props", bw);
-                html.lines().forEach(stdOUT);
+                                        key.getKey().getKey(), key.getKey().getValue(), key.getValue())),
+                        cEntr -> cEntr.getKey().getKey().toString().equals(cLeaf) || !useLeafFilter,
+                        "presentation/web/index.html", "baseBranch");
             });
         } else if (test(args, "properties", anyWord(), "get")) {
             String cBranch = getConf(BRANCHES_CURRENT);
@@ -235,6 +230,29 @@ public class App {
         } else {
             wrongArgs(args);
         }
+    }
+
+    private <T, V> void toHTMlState(
+            Map<T, V> state,
+            Comparator<Map.Entry<T, V>> rowComparator,
+            StringBuffer bw,
+            String cBranch,
+            Consumer<Map.Entry<T, V>> rowRenderer,
+            Predicate<Map.Entry<T, V>> rowFilter, String templateAddress, String baseBranch) {
+        state
+                .entrySet()
+                .stream()
+                .filter(rowFilter)
+                .sorted(rowComparator)
+                .forEach(rowRenderer);
+
+        InputStreamReader template = new InputStreamReader(
+                getClass().getClassLoader().getResourceAsStream(templateAddress));
+
+        String html = FileSystemUtils.loadFile(template).replace("$props", bw)
+                .replace("$requestBranch", cBranch)
+                .replace("$baseBranch", baseBranch);
+        html.lines().forEach(stdOUT);
     }
 
     private void branchesAPI(String[] args) {
@@ -277,6 +295,32 @@ public class App {
             String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
 
             changesListAPI(cBranch, baseBranch);
+        } else if (test(args, CHANGES_API, LIST_METHOD, "--format=html")) {
+            String cBranch = getConf(BRANCHES_CURRENT);
+            String baseBranch = Optional.ofNullable(getConf(CHANGES_BASE)).orElse("master");
+
+            withRequestTree(rt -> {
+                ConfigVersions branch = rt.getBranch(cBranch);
+                StringBuffer bw = new StringBuffer();
+                Comparator<Map.Entry<Map.Entry<PosixPath, String>, ConfigHistory.Change<String>>> comparator = Comparator
+                        .comparing(ff -> ff.getKey().getKey().toString());
+                toHTMlState(
+                        branch.getChanges(
+                                branch.getOffset(baseBranch),
+                                branch.topVersion().get().getVersionHash()),
+                        comparator,
+                        bw,
+                        cBranch,
+                        (key) -> bw.append(
+                                String.format("<tr><td>%s</td><td>%s</td><td>%s->%s</td></tr>\n",
+                                        key.getKey().getValue(),
+                                        key.getKey().getValue(),
+                                        key.getValue().getBefore(),
+                                        key.getValue().getAfter())),
+                        cEntr -> true,
+                        "presentation/web/changes.html",
+                        baseBranch);
+            });
         } else if (test(args, CHANGES_API, LIST_METHOD, anyWord())) {
             String cBranch = getConf(BRANCHES_CURRENT);
 
