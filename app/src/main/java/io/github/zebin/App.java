@@ -313,7 +313,7 @@ public class App {
                         cBranch,
                         (key) -> bw.append(
                                 String.format("<tr><td>%s</td><td>%s</td><td>%s->%s</td></tr>\n",
-                                        key.getKey().getValue(),
+                                        key.getKey().getKey().toString(),
                                         key.getKey().getValue(),
                                         key.getValue().getBefore(),
                                         key.getValue().getAfter())),
