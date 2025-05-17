@@ -18,9 +18,11 @@ import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.process.TextTerminal;
 import io.github.zebin.javabash.sandbox.*;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.InputStreamReader;
+import java.net.PortUnreachableException;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.*;
@@ -44,8 +46,10 @@ public class App {
     public static final String LIST_METHOD = "list|ls";
     public static final String EXPLODE_METHOD = "explode|exp";
     private FileManager fm;
-    private final Consumer<String> stdOUT;
-    private final Consumer<String> stdERR;
+    @Setter
+    private Consumer<String> stdOUT;
+    @Setter
+    private Consumer<String> stdERR;
     private final Configurations conf;
 
     public App(Consumer<String> stdOUT, Consumer<String> stdERR, Configurations conf) {
@@ -95,8 +99,24 @@ public class App {
         if (test(args, "daemon")) {
             // TODO Daemon
             App app = new App(System.out::println, System.err::println, cnf);
-            new Daemon(app);
-            // run daemon thread
+            try (Daemon daemon = new Daemon(app, cnf)) {
+                // run daemon thread
+
+                new Thread(() -> {
+                    while (true) {
+                        daemon.accept();
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }).start();
+
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
             return;
         }
@@ -248,7 +268,10 @@ public class App {
             StringBuffer bw,
             String cBranch,
             Consumer<Map.Entry<T, V>> rowRenderer,
-            Predicate<Map.Entry<T, V>> rowFilter, String templateAddress, String baseBranch) {
+            Predicate<Map.Entry<T, V>> rowFilter,
+            String templateAddress,
+            String baseBranch
+    ) {
         state
                 .entrySet()
                 .stream()
@@ -257,7 +280,8 @@ public class App {
                 .forEach(rowRenderer);
 
         InputStreamReader template = new InputStreamReader(
-                getClass().getClassLoader().getResourceAsStream(templateAddress));
+                getClass().getClassLoader().getResourceAsStream(templateAddress)
+        );
 
         String html = FileSystemUtils.loadFile(template).replace("$props", bw)
                 .replace("$requestBranch", cBranch)
@@ -398,10 +422,8 @@ public class App {
             throw new IllegalArgumentException("Wrong args: " + Stream.of(args)
                     .map(cArg -> "<" + cArg + ">").collect(Collectors.joining(";")));
         } catch (RuntimeException e) {
-            stdOUT.accept("Wrong arguments!");
+            stdERR.accept(e.toString());
             printHelp();
-
-            throw e;
         }
     }
 

@@ -9,6 +9,7 @@ import java.net.UnixDomainSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -18,10 +19,12 @@ public class Daemon implements AutoCloseable {
     private final App app;
     private PosixPath socketPath;
     private ServerSocketChannel serverChannel;
-    private Configurations cfg;
+    private final Configurations cfg;
 
-    public Daemon(App app) {
+    public Daemon(App app, Configurations cfg) {
         this.app = app;
+        this.cfg = cfg;
+        bind();
     }
 
     public void bind() {
@@ -38,10 +41,9 @@ public class Daemon implements AutoCloseable {
     public void accept() {
         try {
             SocketChannel serverAccept = serverChannel.accept();
-            ByteBuffer buf = ByteBuffer.allocate(1024);
-            StringBuilder sb = new StringBuilder();
-
             if (serverAccept != null) {
+                ByteBuffer buf = ByteBuffer.allocate(1024);
+                StringBuilder sb = new StringBuilder();
                 while (true) {
                     buf.clear();
                     readSocketMessage(serverAccept, buf)
@@ -49,7 +51,17 @@ public class Daemon implements AutoCloseable {
                                 sb.append(msg);
                                 log.info("[Client message] {}", msg);
                             });
-                    pollLines(sb).forEach(ll -> app.run(ll.split(" ")));
+                    pollLines(sb).forEach(ll -> {
+                        app.setStdOUT(f -> {
+                            try {
+                                serverAccept.write(ByteBuffer.wrap(f.getBytes(StandardCharsets.UTF_8)));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                        app.run(ll.split(" "));
+
+                    });
                     Thread.sleep(100);
                 }
             }
