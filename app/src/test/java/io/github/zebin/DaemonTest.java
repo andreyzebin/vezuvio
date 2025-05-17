@@ -1,5 +1,6 @@
 package io.github.zebin;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -11,11 +12,20 @@ import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.stream.Collectors;
 
 class DaemonTest {
 
+
+    @Test
+    public void test1() {
+        StringBuilder sb =new StringBuilder("foo\nbar\nwow");
+        Assertions.assertEquals("foo|bar",Daemon.pollLines(sb)
+                .collect(Collectors.joining("|")));
+
+        Assertions.assertEquals("wow", sb.toString());
+
+    }
 
     @Test
     public void test() throws IOException, InterruptedException {

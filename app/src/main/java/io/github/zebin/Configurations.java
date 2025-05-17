@@ -41,6 +41,16 @@ public class Configurations {
         return configLevel;
     }
 
+    public PosixPath getVezuvioHome() {
+        if (configLevel == VirtualDirectoryTree.USER_LEVEL_CONF) {
+            return getVezuvioUserHome();
+        } else if (configLevel == VirtualDirectoryTree.WORKDIR_LEVEL_CONF) {
+            return getVezuvioWorkDirHome();
+        }
+
+        return getVezuvioLocalHome();
+    }
+
     public PosixPath getUserHomeDir() {
         return PosixPath.ofPosix("~");
     }
@@ -49,7 +59,7 @@ public class Configurations {
         return PosixPath.ofPosix("/opt");
     }
 
-    public PosixPath getVezuvioLocalHome() {
+    public PosixPath getVezuvioWorkDirHome() {
         return getWorkDir().climb(VESUVIO_HOME);
     }
 
@@ -57,17 +67,30 @@ public class Configurations {
         return getUserHomeDir().climb(VESUVIO_HOME);
     }
 
+    public PosixPath getVezuvioLocalHome() {
+        return getLocalDir().climb(VESUVIO_HOME);
+    }
+
     public ConfigTree getConf() {
-        return new ConfigTree(DirectoryTreeCacheProxy.cachedProxy(new VirtualDirectoryTree(
-                // TODO add OS level
+        return new ConfigTree(
                 DirectoryTreeCacheProxy.cachedProxy(
-                        new WorkingDirectory(fm, getUserHomeDir().climb(VESUVIO_HOME_CONF), e -> {
-                }), new AtomicReference<>("kk")),
-                DirectoryTreeCacheProxy.cachedProxy(new WorkingDirectory(fm, getUserHomeDir().climb(VESUVIO_HOME_CONF), e -> {
-                }), new AtomicReference<>("kk")),
-                DirectoryTreeCacheProxy.cachedProxy(new WorkingDirectory(fm, getWorkDir().climb(VESUVIO_HOME_CONF), e -> {
-                }), new AtomicReference<>("kk"))
-        ), new AtomicReference<>("ff")));
+                        new VirtualDirectoryTree(
+                                // TODO add OS level
+                                getDirYree(getUserHomeDir()),
+                                getDirYree(getUserHomeDir()),
+                                getDirYree(getWorkDir())
+                        ),
+                        new AtomicReference<>("ff")
+                )
+        );
+    }
+
+    private DirectoryTreeCacheProxy getDirYree(PosixPath userHomeDir) {
+        return DirectoryTreeCacheProxy.cachedProxy(
+                new WorkingDirectory(fm, userHomeDir.climb(VESUVIO_HOME_CONF), e -> {
+                }),
+                new AtomicReference<>("kk")
+        );
     }
 
     public TextTerminal getTerm() {

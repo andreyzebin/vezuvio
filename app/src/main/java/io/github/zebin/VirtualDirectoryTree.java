@@ -21,7 +21,7 @@ public class VirtualDirectoryTree implements DirectoryTree {
      * local -> local
      * local/runtime -> runtime
      */
-    public VirtualDirectoryTree(DirectoryTree user, DirectoryTree local, DirectoryTree runtime) {
+    public  VirtualDirectoryTree(DirectoryTree user, DirectoryTree local, DirectoryTree runtime) {
         this.levels = Map.of(
                 OS_LEVEL_CONF, user,
                 USER_LEVEL_CONF, local,

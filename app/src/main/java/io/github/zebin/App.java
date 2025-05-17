@@ -91,14 +91,17 @@ public class App {
                 VirtualDirectoryTree.USER_LEVEL_CONF, fm);
 
         log.info("Configuration top is {}", cnf.getConfLevel());
-        App app = new App(System.out::println, System.err::println, cnf);
 
         if (test(args, "daemon")) {
             // TODO Daemon
+            App app = new App(System.out::println, System.err::println, cnf);
             new Daemon(app);
+            // run daemon thread
+
             return;
         }
 
+        App app = new App(System.out::println, System.err::println, cnf);
         app.run(args);
     }
 
@@ -270,7 +273,7 @@ public class App {
                 rt.listBranches().forEach(stdOUT::accept);
             });
         } else if (test(args, "branches", "prune")) {
-            fm.remove(conf.getVezuvioLocalHome().climb("tmp"));
+            fm.remove(conf.getVezuvioWorkDirHome().climb("tmp"));
         } else if (test(args, "branches", "use", anyWord())) {
             setConf(BRANCHES_CURRENT, args[2]);
         } else if (test(args, "branches", "fork", anyWord())) {
@@ -478,7 +481,7 @@ public class App {
 
             @Override
             public Path getHomeTemporaryDir() {
-                return conf.getVezuvioLocalHome().climb("tmp").toPath();
+                return conf.getVezuvioWorkDirHome().climb("tmp").toPath();
             }
         };
     }
