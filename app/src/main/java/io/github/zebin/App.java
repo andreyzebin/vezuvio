@@ -91,7 +91,15 @@ public class App {
                 VirtualDirectoryTree.USER_LEVEL_CONF, fm);
 
         log.info("Configuration top is {}", cnf.getConfLevel());
-        new App(System.out::println, System.err::println, cnf).run(args);
+        App app = new App(System.out::println, System.err::println, cnf);
+
+        if (test(args, "daemon")) {
+            // TODO Daemon
+            new Daemon(app);
+            return;
+        }
+
+        app.run(args);
     }
 
     public static <T> Stream<T> lastElements(Stream<T> l, int n) {
@@ -111,7 +119,6 @@ public class App {
     public void run(String[] args) {
         TextTerminal terminal = conf.getTerm();
         fm = new FileManager(terminal);
-        String os = terminal.eval("echo $(uname)");
 
         if (test(args, "origins", "use", anyWord())) {
             setConf(ORIGINS_CURRENT, args[2]);
@@ -409,7 +416,7 @@ public class App {
         return conf.getConf().getEffectiveProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + prop);
     }
 
-    public boolean test(String[] args, String arg1, String... argsOther) {
+    public static boolean test(String[] args, String arg1, String... argsOther) {
         List<ArgsMatcher> expectedArgs = Stream.concat(Stream.of(arg1), Stream.of(argsOther))
                 .map(ArgsMatcher::exact)
                 .toList();
