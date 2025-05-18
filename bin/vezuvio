@@ -51,6 +51,14 @@ if [[ -d "${VEZUVIO_HOME_WORK_DIR_LEVEL}" ]]; then
 fi
 
 debug() { printf "%s\n" "$*" >&2; }
+
+# Check if daemon is up...
+# if [[ -f "${VEZUVIO_HOME}/daemon.socket" ]]; then
+# debug "Daemon is found: ${VEZUVIO_HOME}/daemon.socket"
+# fi
+# VEZUVIO_DAEMON="${VEZUVIO_HOME}/daemon.socket"
+# echo "--version" | nc -U $VEZUVIO_DAEMON
+
 vuApp() {
   currentDir=$(pwd)
 
