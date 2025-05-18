@@ -113,6 +113,7 @@ public class Daemon implements AutoCloseable {
                                     try {
                                         log.info("Sending answer {}", f);
                                         ch.write(ByteBuffer.wrap(f.getBytes(StandardCharsets.UTF_8)));
+                                        ch.write(ByteBuffer.wrap("\n".getBytes(StandardCharsets.UTF_8)));
                                     } catch (IOException e) {
                                         throw new RuntimeException(e);
                                     }
