@@ -99,10 +99,10 @@ vuApp() {
   cd "${VEZUVIO_HOME}"/repository || exit
   if ! hasDaemon
   then
-    debug "Daemon is missing. Run using gradle..."
+    # debug "Daemon is missing. Run using gradle..."
     eval "gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome=${VEZUVIO_HOME} -PworkingDirectory=${currentDir} --args=\"$*\""
   else
-    debug "Found daemon. Lets use it!"
+    # debug "Found daemon. Lets use it!"
     eval "echo $* | nc -U ${VEZUVIO_HOME}/daemon.socket"
   fi
   cd "${currentDir}" || exit
