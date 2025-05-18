@@ -76,12 +76,13 @@ public class Daemon implements AutoCloseable {
                         ch.configureBlocking(false);
                         byteCounter.put(ch, 0);
                         lineInputBuffer.put(ch, new StringBuilder());
-                        System.out.printf("Server: new connection\n\tfrom {%s}\n", ch.getRemoteAddress());
-                        System.out.printf("\tConnection id: %s\n", nextConnectionId);
+                        log.info("Server: new connection");
+                        log.info("\tfrom {{}}", ch.getRemoteAddress());
+                        log.info("Connection id: {}", nextConnectionId);
                         if (!userid.isEmpty()) {
-                            System.out.printf("\tpeer credentials: %s\n", userid);
+                            log.info("\tpeer credentials: {}", userid);
                         }
-                        System.out.printf("\tConnection count: %d\n", byteCounter.size());
+                        log.info("\tConnection count: {}", byteCounter.size());
                         ch.register(selector, SelectionKey.OP_READ, nextConnectionId++);
                     } else {
                         var ch = (SocketChannel) c;
@@ -92,8 +93,9 @@ public class Daemon implements AutoCloseable {
                         int n = ch.read(readBuf);
                         if (n < 0) {
                             String remote = ch.getRemoteAddress().toString();
-                            System.out.printf("Server: closing connection\n\tfrom: {%s} Id: %d\n", remote, id);
-                            System.out.printf("\tBytes received: %d\n", bytes);
+                            log.info("Server: closing connection");
+                            log.info("\tfrom: {} Id: {}", remote, id);
+                            log.info("\tBytes received: {}", bytes);
                             byteCounter.remove(ch);
                             ch.close();
                         } else {
@@ -111,7 +113,7 @@ public class Daemon implements AutoCloseable {
                             pollLines(line).forEach(ll -> {
                                 app.setStdOUT(f -> {
                                     try {
-                                        log.info("Sending answer {}", f);
+                                        log.info("\tSending answer: {}", f);
                                         ch.write(ByteBuffer.wrap(f.getBytes(StandardCharsets.UTF_8)));
                                         ch.write(ByteBuffer.wrap("\n".getBytes(StandardCharsets.UTF_8)));
                                     } catch (IOException e) {
@@ -119,10 +121,7 @@ public class Daemon implements AutoCloseable {
                                     }
                                 });
                                 app.run(ll.split(" "));
-
                             });
-
-
                         }
                     }
                 } catch (IOException e) {
@@ -155,7 +154,7 @@ public class Daemon implements AutoCloseable {
 
     private static void display(SocketChannel ch, ByteBuffer readBuf, int id)
             throws IOException {
-        System.out.printf("Server: received %d bytes from: {%s} Id: %d\n",
+        log.info("Server: received {} bytes from: {} Id: {}",
                 readBuf.remaining(), ch.getRemoteAddress(), id);
     }
 }

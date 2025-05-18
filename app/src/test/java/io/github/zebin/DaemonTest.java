@@ -71,7 +71,7 @@ class DaemonTest {
 
             @Override
             void run(String[] args) {
-                log.info("Received args: {}", String.join(" ", args));
+                log.info("\tReceived args: {}", String.join(" ", args));
                 stdOUT.accept("Hello, my friend!");
             }
         };
