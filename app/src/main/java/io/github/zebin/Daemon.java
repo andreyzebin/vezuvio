@@ -32,11 +32,11 @@ public class Daemon implements AutoCloseable {
         this.cfg = cfg;
     }
 
-    private void bind() {
+    private void bind(Selector selector) {
         socketFile = cfg.getVezuvioHome().climb("daemon.socket");
         UnixDomainSocketAddress serverListenAddress = UnixDomainSocketAddress.of(socketFile.toPath());
+        socketFile.toPath().toFile().deleteOnExit();
         try {
-            Selector selector = Selector.open();
             serverSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
             serverSocket.configureBlocking(false);
 
@@ -50,10 +50,10 @@ public class Daemon implements AutoCloseable {
     }
 
     public void doServer() throws IOException {
-        bind();
+        Selector selector = Selector.open();
+        bind(selector);
 
         ByteBuffer readBuf = ByteBuffer.allocate(64 * 1024);
-        final Selector selector = Selector.open();
         int nextConnectionId = 1;
         while (true) {
             selector.select();

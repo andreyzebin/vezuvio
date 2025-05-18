@@ -7,6 +7,7 @@ import io.github.zebin.javabash.process.TextTerminal;
 import io.github.zebin.javabash.sandbox.AllFileManager;
 import io.github.zebin.javabash.sandbox.BashUtils;
 import io.github.zebin.javabash.sandbox.FileManager;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,10 +19,12 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+@Slf4j
 class DaemonTest {
 
 
@@ -68,7 +71,7 @@ class DaemonTest {
 
             @Override
             void run(String[] args) {
-
+                log.info("Received args: {}", String.join(" ", args));
             }
         };
 
