@@ -18,6 +18,7 @@ public class Configurations {
     private final TextTerminal term;
     private final AllFileManager fm;
     private final PosixPath configLevel;
+    private ConfigTree ct;
 
     public Configurations(PosixPath wd, TextTerminal term, PosixPath level) {
         this.wd = wd;
@@ -72,17 +73,21 @@ public class Configurations {
     }
 
     public ConfigTree getConf() {
-        return new ConfigTree(
-                DirectoryTreeCacheProxy.cachedProxy(
-                        new VirtualDirectoryTree(
-                                // TODO add OS level
-                                getDirYree(getUserHomeDir()),
-                                getDirYree(getUserHomeDir()),
-                                getDirYree(getWorkDir())
-                        ),
-                        new AtomicReference<>("ff")
-                )
-        );
+        if (ct == null) {
+            ct = new ConfigTree(
+                    DirectoryTreeCacheProxy.cachedProxy(
+                            new VirtualDirectoryTree(
+                                    // TODO add OS level
+                                    getDirYree(getUserHomeDir()),
+                                    getDirYree(getUserHomeDir()),
+                                    getDirYree(getWorkDir())
+                            ),
+                            new AtomicReference<>("ff")
+                    )
+            );
+        }
+
+        return ct;
     }
 
     private DirectoryTreeCacheProxy getDirYree(PosixPath userHomeDir) {
