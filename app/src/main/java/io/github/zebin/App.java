@@ -3,7 +3,6 @@
  */
 package io.github.zebin;
 
-import io.github.andreyzebin.gitSql.FileSystemUtils;
 import io.github.andreyzebin.gitSql.cache.FileManagerCacheProxy;
 import io.github.andreyzebin.gitSql.cache.GitFsCacheProxy;
 import io.github.andreyzebin.gitSql.config.ConfigHistory;
@@ -18,24 +17,19 @@ import io.github.zebin.javabash.frontend.FunnyTerminal;
 import io.github.zebin.javabash.process.TerminalProcess;
 import io.github.zebin.javabash.process.TextTerminal;
 import io.github.zebin.javabash.sandbox.*;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.InputStreamReader;
-import java.net.PortUnreachableException;
 import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
-public class App {
+public class App extends LineStreamIO {
     public static final String IO_GITHUB_VEZUVIO = "io.github.vezuvio";
-
     public static final String ORIGINS_CURRENT = "origins.current";
     public static final String CREDENTIALS_CURRENT = "credentials.current";
     public static final String BRANCHES_CURRENT = "branches.current";
@@ -46,30 +40,11 @@ public class App {
     public static final String LIST_METHOD = "list|ls";
     public static final String EXPLODE_METHOD = "explode|exp";
     private FileManager fm;
-    @Setter
-    private Consumer<String> stdOUT;
-    @Setter
-    private Consumer<String> stdERR;
     private final Configurations conf;
 
     public App(Consumer<String> stdOUT, Consumer<String> stdERR, Configurations conf) {
-        this.stdOUT = stdOUT;
-        this.stdERR = stdERR;
+        super(stdOUT, stdERR);
         this.conf = conf;
-    }
-
-    public static String fixWinPath(String corruptWinPath) {
-        String[] split = corruptWinPath.split(":");
-        boolean hasDisk = split.length > 1;
-        // boolean isAbsolute = hasDisk;
-
-        if (hasDisk) {
-            String disk = split[0];
-            String path = split[1];
-            return "/" + disk.toLowerCase() + path;
-        } else {
-            return corruptWinPath;
-        }
     }
 
     public static void main(String[] args) {
@@ -125,20 +100,7 @@ public class App {
         app.run(args);
     }
 
-    public static <T> Stream<T> lastElements(Stream<T> l, int n) {
-        LinkedList<T> ll = new LinkedList<>();
-
-        l.forEach(el -> {
-            ll.addFirst(el);
-
-            if (ll.size() > n) {
-                ll.removeLast();
-            }
-        });
-
-        return ll.stream();
-    }
-
+    @Override
     public void run(String[] args) {
         TextTerminal terminal = conf.getTerm();
         fm = new FileManager(terminal);
@@ -180,10 +142,6 @@ public class App {
         } else {
             wrongArgs(args);
         }
-    }
-
-    private static String anyWord() {
-        return "*";
     }
 
     private void propertiesAPI(String[] args1) {
@@ -260,33 +218,6 @@ public class App {
         } else {
             wrongArgs(args);
         }
-    }
-
-    private <T, V> void toHTMlState(
-            Map<T, V> state,
-            Comparator<Map.Entry<T, V>> rowComparator,
-            StringBuffer bw,
-            String cBranch,
-            Consumer<Map.Entry<T, V>> rowRenderer,
-            Predicate<Map.Entry<T, V>> rowFilter,
-            String templateAddress,
-            String baseBranch
-    ) {
-        state
-                .entrySet()
-                .stream()
-                .filter(rowFilter)
-                .sorted(rowComparator)
-                .forEach(rowRenderer);
-
-        InputStreamReader template = new InputStreamReader(
-                getClass().getClassLoader().getResourceAsStream(templateAddress)
-        );
-
-        String html = FileSystemUtils.loadFile(template).replace("$props", bw)
-                .replace("$requestBranch", cBranch)
-                .replace("$baseBranch", baseBranch);
-        html.lines().forEach(stdOUT);
     }
 
     private void branchesAPI(String[] args) {
@@ -439,14 +370,6 @@ public class App {
 
     private String getConf(String prop) {
         return conf.getConf().getEffectiveProperty(conf.getConfLevel(), IO_GITHUB_VEZUVIO + "." + prop);
-    }
-
-    public static boolean test(String[] args, String arg1, String... argsOther) {
-        List<ArgsMatcher> expectedArgs = Stream.concat(Stream.of(arg1), Stream.of(argsOther))
-                .map(ArgsMatcher::exact)
-                .toList();
-        List<ArgsMatcher> testArgs = Arrays.stream(args).map(ArgsMatcher::escape).toList();
-        return expectedArgs.equals(testArgs);
     }
 
     public boolean startsWith(String[] args, String arg1, String... argsOther) {
