@@ -54,7 +54,7 @@ debug() { printf "%s\n" "$*" >&2; }
 
 # Check if daemon is up...
 # if [[ -f "${VEZUVIO_HOME}/daemon.socket" ]]; then
-# debug "Daemon is found: ${VEZUVIO_HOME}/daemon.socket"
+#   debug "Daemon is found: ${VEZUVIO_HOME}/daemon.socket"
 # fi
 # VEZUVIO_DAEMON="${VEZUVIO_HOME}/daemon.socket"
 # echo "--version" | nc -U $VEZUVIO_DAEMON
