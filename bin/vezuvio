@@ -80,7 +80,7 @@ hasBuild() {
 }
 
 hasDaemon() {
-  [[ -d "${VEZUVIO_HOME}/daemon.socket" ]]
+  [[ -S "${VEZUVIO_HOME}/daemon.socket" ]]
 }
 
 vuApp() {
