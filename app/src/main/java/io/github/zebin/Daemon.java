@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 public class Daemon implements AutoCloseable {
     private final LineStreamIO app;
     private PosixPath socketFile;
-    private ServerSocketChannel serverSocket;
     private final Configurations cfg;
 
     static Map<SocketChannel, Integer> byteCounter = new HashMap<>();
@@ -37,7 +36,7 @@ public class Daemon implements AutoCloseable {
         UnixDomainSocketAddress serverListenAddress = UnixDomainSocketAddress.of(socketFile.toPath());
         socketFile.toPath().toFile().deleteOnExit();
         try {
-            serverSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
+            ServerSocketChannel serverSocket = ServerSocketChannel.open(StandardProtocolFamily.UNIX);
             serverSocket.configureBlocking(false);
 
             serverSocket.register(selector, SelectionKey.OP_ACCEPT, null);
@@ -121,6 +120,13 @@ public class Daemon implements AutoCloseable {
                                     }
                                 });
                                 app.run(ll.split(" "));
+                                // finish
+
+                                try {
+                                    ch.close();
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
                             });
                         }
                     }
