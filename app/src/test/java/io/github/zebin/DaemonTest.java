@@ -75,9 +75,7 @@ class DaemonTest {
         Configurations cfg = getConfigurations();
 
         try (Daemon daemon = new Daemon(app, cfg)) {
-
-            daemon.accept();
-
+            daemon.doServer();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

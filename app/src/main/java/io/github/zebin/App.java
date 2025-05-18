@@ -76,24 +76,13 @@ public class App extends LineStreamIO {
             App app = new App(System.out::println, System.err::println, cnf);
             try (Daemon daemon = new Daemon(app, cnf)) {
                 // run daemon thread
+                daemon.doServer();
 
-                new Thread(() -> {
-                    while (true) {
-                        daemon.accept();
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }).start();
-
-
+                return;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
-            return;
         }
 
         App app = new App(System.out::println, System.err::println, cnf);
