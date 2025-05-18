@@ -100,6 +100,7 @@ public class Daemon implements AutoCloseable {
                             readBuf.flip();
                             bytes += n;
                             byteCounter.put(ch, bytes);
+                            display(ch, readBuf, id);
 
 
                             byte[] bytesBuf = new byte[n];
@@ -120,7 +121,6 @@ public class Daemon implements AutoCloseable {
                             });
 
 
-                            display(ch, readBuf, id);
                         }
                     }
                 } catch (IOException e) {
