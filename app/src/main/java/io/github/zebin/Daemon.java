@@ -111,6 +111,7 @@ public class Daemon implements AutoCloseable {
                             pollLines(line).forEach(ll -> {
                                 app.setStdOUT(f -> {
                                     try {
+                                        log.info("Sending answer {}", f);
                                         ch.write(ByteBuffer.wrap(f.getBytes(StandardCharsets.UTF_8)));
                                     } catch (IOException e) {
                                         throw new RuntimeException(e);
