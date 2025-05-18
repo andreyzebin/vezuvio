@@ -41,6 +41,7 @@ public class App extends LineStreamIO {
     public static final String EXPLODE_METHOD = "explode|exp";
     private FileManager fm;
     private final Configurations conf;
+    private RequestTree rt;
 
     public App(Consumer<String> stdOUT, Consumer<String> stdERR, Configurations conf) {
         super(stdOUT, stdERR);
@@ -373,16 +374,18 @@ public class App extends LineStreamIO {
 
     public void withRequestTree(Consumer<RequestTree> consumer) {
         // master, request-001
-        AtomicReference<String> cControl = new AtomicReference<>();
-        FileManagerCacheProxy fm = FileManagerCacheProxy.cachedProxy(new FileManager(conf.getTerm()), cControl);
+        if (rt == null) {
+            AtomicReference<String> cControl = new AtomicReference<>();
+            FileManagerCacheProxy fm = FileManagerCacheProxy.cachedProxy(new FileManager(conf.getTerm()), cControl);
 
-        Map<String, GitFs> cache = new HashMap<>();
-        Map<PosixPath, ConfigVersions> cache2 = new HashMap<>();
-        AtomicReference<RequestTree> rts = new AtomicReference<>();
+            Map<String, GitFs> cache = new HashMap<>();
+            Map<PosixPath, ConfigVersions> cache2 = new HashMap<>();
+            AtomicReference<RequestTree> rts = new AtomicReference<>();
 
-        GitConfigurations cfgs = getGitConfigurations();
-        RequestTree rt = getRequestTree(cache, fm, cfgs, cControl, cache2, rts);
-        rts.set(rt);
+            GitConfigurations cfgs = getGitConfigurations();
+            rt = getRequestTree(cache, fm, cfgs, cControl, cache2, rts);
+            rts.set(rt);
+        }
         consumer.accept(rt);
     }
 
