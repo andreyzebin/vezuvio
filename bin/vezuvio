@@ -102,7 +102,7 @@ vuApp() {
     debug "Daemon is absent. Run a Daemon!"
     # vezuvio daemon > daemon.log &
     # echo "$!" > daemon.pid
-    eval "gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome=${VEZUVIO_HOME} -PworkingDirectory=${currentDir} --args=\"daemon\"" >> "${VEZUVIO_HOME}/daemon.log" &
+    eval "gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome=${VEZUVIO_HOME} -PworkingDirectory=${currentDir} --args=\"daemon\">>${VEZUVIO_HOME}/daemon.log &"
     echo "$!" > "${VEZUVIO_HOME}/daemon.pid"
 
     eval "gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome=${VEZUVIO_HOME} -PworkingDirectory=${currentDir} --args=\"$*\""
