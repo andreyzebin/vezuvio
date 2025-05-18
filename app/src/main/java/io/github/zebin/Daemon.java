@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -133,40 +132,6 @@ public class Daemon implements AutoCloseable {
         }
     }
 
-    public void accept() {
-        try {
-            SocketChannel acceptChannel = serverSocket.accept();
-            if (acceptChannel != null) {
-                log.info("Client accepted {}", acceptChannel);
-                ByteBuffer buf = ByteBuffer.allocate(1024);
-                StringBuilder sb = new StringBuilder();
-                while (true) {
-                    buf.clear();
-                    readSocketMessage(acceptChannel, buf)
-                            .ifPresent(msg -> {
-                                sb.append(msg);
-                                log.info("[Client message] {}", msg);
-                            });
-                    pollLines(sb).forEach(ll -> {
-                        app.setStdOUT(f -> {
-                            try {
-                                acceptChannel.write(ByteBuffer.wrap(f.getBytes(StandardCharsets.UTF_8)));
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-                        app.run(ll.split(" "));
-
-                    });
-                    Thread.sleep(100);
-                }
-            }
-
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static Stream<String> pollLines(StringBuilder sb) {
         int lastLineEnd = sb.lastIndexOf("\n");
         if (lastLineEnd > -1) {
@@ -184,18 +149,6 @@ public class Daemon implements AutoCloseable {
             log.info("deleting {}...", socketFile);
             Files.deleteIfExists(socketFile.toPath());
         }
-    }
-
-    private Optional<String> readSocketMessage(SocketChannel channel, ByteBuffer buffer) throws IOException {
-        int bytesRead = channel.read(buffer);
-        if (bytesRead < 0)
-            return Optional.empty();
-
-        byte[] bytes = new byte[bytesRead];
-        buffer.flip();
-        buffer.get(bytes);
-        String message = new String(bytes);
-        return Optional.of(message);
     }
 
     private static void display(SocketChannel ch, ByteBuffer readBuf, int id)
