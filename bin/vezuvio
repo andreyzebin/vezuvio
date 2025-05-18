@@ -59,6 +59,10 @@ debug() { printf "%s\n" "$*" >&2; }
 # VEZUVIO_DAEMON="${VEZUVIO_HOME}/daemon.socket"
 # echo "--version" | nc -U $VEZUVIO_DAEMON
 
+# Run a new daemon
+# vezuvio daemon > daemon.logs &
+# echo "$!" > daemon.pid
+
 vuApp() {
   currentDir=$(pwd)
 
