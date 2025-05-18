@@ -60,7 +60,7 @@ debug() { printf "%s\n" "$*" >&2; }
 # echo "--version" | nc -U $VEZUVIO_DAEMON
 
 # Run a new daemon
-# vezuvio daemon > daemon.logs &
+# vezuvio daemon > daemon.log &
 # echo "$!" > daemon.pid
 
 vuApp() {
