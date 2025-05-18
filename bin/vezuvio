@@ -63,27 +63,48 @@ debug() { printf "%s\n" "$*" >&2; }
 # vezuvio daemon > daemon.log &
 # echo "$!" > daemon.pid
 
+buildApp() {
+  debug "Running build..."
+  cd "${VEZUVIO_HOME}"/repository || exit
+  debug "Current dir: $currentDir"
+  debug "Home dir: ${VEZUVIO_HOME}"
+  if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
+    debug "Using init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
+  fi
+  eval "gradle --console=plain build ${includeBuild} -PvesuviusHome=${VEZUVIO_HOME} -x test">&2
+  debug "Running build...Finished!"
+}
+
+hasBuild() {
+  [[ -d "${VEZUVIO_HOME}/repository/app/build" ]]
+}
+
+hasDaemon() {
+  [[ -d "${VEZUVIO_HOME}/daemon.socket" ]]
+}
+
 vuApp() {
   currentDir=$(pwd)
-
-  cd "${VEZUVIO_HOME}"/repository || exit
   includeBuild=""
   if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
     includeBuild="--init-script=$IO_GITHUB_VESUVIUS_GRADLE_INIT"
   fi
-  if [[ ! -d "app/build" ]]; then
-      debug "Running app first time. Requires build."
-      debug "Current dir: $currentDir"
-      debug "Home dir: ${VEZUVIO_HOME}"
-      debug "Running build..."
-      if [[ -n "${IO_GITHUB_VESUVIUS_GRADLE_INIT-}" ]]; then
-        debug "Using init.gradle $IO_GITHUB_VESUVIUS_GRADLE_INIT"
-      fi
-      eval "gradle --console=plain build ${includeBuild} -PvesuviusHome=${VEZUVIO_HOME} -x test">&2
-      debug "Running build...Finished!"
+
+  if ! hasBuild
+  then
+    debug "Build is missing. Looks like, you run it first time."
+    buildApp
   fi
 
-  eval "gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome=${VEZUVIO_HOME} -PworkingDirectory=${currentDir} --args=\"$*\""
+  cd "${VEZUVIO_HOME}"/repository || exit
+  if ! hasDaemon
+  then
+    debug "Daemon is missing. Run using gradle..."
+    eval "gradle --console=plain ${includeBuild} app:run -PisProduction=true -PvesuviusHome=${VEZUVIO_HOME} -PworkingDirectory=${currentDir} --args=\"$*\""
+  else
+    debug "Found daemon. Lets use it!"
+    eval "echo $* | nc -U ${VEZUVIO_HOME}/daemon.socket"
+  fi
   cd "${currentDir}" || exit
 }
 
