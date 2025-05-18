@@ -94,21 +94,6 @@ export CI=1
 export IO_GITHUB_VESUVIUS_GRADLE_INIT="$(pwd)/.vezuvio/repository/test-environment/init.gradle.kts"
 ```
 
-Unix socket write/read
 ```bash
-
-INPUT=/home/andrey/repos/vezuvio/.vezuvio/vezuvio.socket
-mkfifo -m 600 "$INPUT"
-OUTPUT=/home/andrey/repos/vezuvio/.vezuvio/vezuvio.socket
-mkfifo -m 600 "$OUTPUT"
-
-(cat "$INPUT" | nc -U "$SKT_PATH" > "$OUTPUT") &
-NCPID=$!
-
-exec 4>"$INPUT"
-exec 5<"$OUTPUT"
-
-echo "$POST_LINE" >&4
-read -u 5 -r RESPONSE;
-echo "Response: '$RESPONSE'"
+kill -9 $(cat .vezuvio/daemon.pid)
 ```
