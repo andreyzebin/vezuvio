@@ -2,6 +2,11 @@
 
 
 ## Development
+
+# Have an ssh key
+If you dont have key yet in ~/.ssh/ then add one: 
+https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+
 ### Run from source
 ```bash
 ./gradlew test
